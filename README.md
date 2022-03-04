@@ -22,7 +22,7 @@ git push -u origin main
 You can initialize this repository with code from a Subversion, Mercurial, or TFS project.
 
 
-## pipeline 
+## pipeline_download_seqs_from_NCBI
 software installation
 ```
 conda install -y entrez-direct
