@@ -1,0 +1,4 @@
+esearch -db protein -query " [PROT] AND bacteria[filter] NOT partial[All Fields] NOT plasmid[All Fields]" | efetch -format fasta > _bacteria.faa
+esearch -db protein -query " [PROT] AND bacteria[filter] AND refseq[filter] NOT partial[All Fields] NOT plasmid[All Fields]" | efetch -format fasta > _bacteria_refseq.faa
+esearch -db protein -query " [PROT] AND fungi[filter] NOT partial[All Fields] NOT plasmid[All Fields]" | efetch -format fasta > _fungi.faa
+esearch -db protein -query " [PROT] AND fungi[filter] AND refseq[filter] NOT partial[All Fields] NOT plasmid[All Fields]" | efetch -format fasta > _fungi_refseq.faa
