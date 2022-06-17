@@ -1,0 +1,390 @@
+pathway_id	pathway_num	level_1	level_2	level_3
+map00010	45	Metabolism	Carbohydrate metabolism	 Glycolysis / Gluconeogenesis
+map00020	29	Metabolism	Carbohydrate metabolism	 Citrate cycle (TCA cycle)
+map00030	31	Metabolism	Carbohydrate metabolism	 Pentose phosphate pathway
+map00040	9	Metabolism	Carbohydrate metabolism	 Pentose and glucuronate interconversions
+map00051	35	Metabolism	Carbohydrate metabolism	 Fructose and mannose metabolism
+map00052	20	Metabolism	Carbohydrate metabolism	 Galactose metabolism
+map00053	11	Metabolism	Carbohydrate metabolism	 Ascorbate and aldarate metabolism
+map00061	11	Metabolism	Lipid metabolism	 Fatty acid biosynthesis
+map00062	12	Metabolism	Lipid metabolism	 Fatty acid elongation
+map00071	30	Metabolism	Lipid metabolism	 Fatty acid degradation
+map00100	28	Metabolism	Lipid metabolism	 Steroid biosynthesis
+map00130	15	Metabolism	Metabolism of cofactors and vitamins	 Ubiquinone and other terpenoid-quinone biosynthesis
+map00140	5	Metabolism	Lipid metabolism	 Steroid hormone biosynthesis
+map00190	163	Metabolism	Energy metabolism	 Oxidative phosphorylation
+map00195	4	Metabolism	Energy metabolism	 Photosynthesis
+map00220	30	Metabolism	Amino acid metabolism	 Arginine biosynthesis
+map00230	97	Metabolism	Nucleotide metabolism	 Purine metabolism
+map00232	3	Metabolism	Biosynthesis of other secondary metabolites	 Caffeine metabolism
+map00240	45	Metabolism	Nucleotide metabolism	 Pyrimidine metabolism
+map00250	42	Metabolism	Amino acid metabolism	 Alanine, aspartate and glutamate metabolism
+map00254	2	Metabolism	Biosynthesis of other secondary metabolites	 Aflatoxin biosynthesis
+map00260	54	Metabolism	Amino acid metabolism	 Glycine, serine and threonine metabolism
+map00261	6	Metabolism	Biosynthesis of other secondary metabolites	 Monobactam biosynthesis
+map00270	58	Metabolism	Amino acid metabolism	 Cysteine and methionine metabolism
+map00280	29	Metabolism	Amino acid metabolism	 Valine, leucine and isoleucine degradation
+map00281	2	Metabolism	Metabolism of terpenoids and polyketides	 Geraniol degradation
+map00290	18	Metabolism	Amino acid metabolism	 Valine, leucine and isoleucine biosynthesis
+map00300	14	Metabolism	Amino acid metabolism	 Lysine biosynthesis
+map00310	26	Metabolism	Amino acid metabolism	 Lysine degradation
+map00311	5	Metabolism	Biosynthesis of other secondary metabolites	 Penicillin and cephalosporin biosynthesis
+map00330	44	Metabolism	Amino acid metabolism	 Arginine and proline metabolism
+map00332	1	Metabolism	Biosynthesis of other secondary metabolites	 Carbapenem biosynthesis
+map00333	2	Metabolism	Biosynthesis of other secondary metabolites	 Prodigiosin biosynthesis
+map00340	15	Metabolism	Amino acid metabolism	 Histidine metabolism
+map00350	18	Metabolism	Amino acid metabolism	 Tyrosine metabolism
+map00360	16	Metabolism	Amino acid metabolism	 Phenylalanine metabolism
+map00361	2	Metabolism	Xenobiotics biodegradation and metabolism	 Chlorocyclohexane and chlorobenzene degradation
+map00362	10	Metabolism	Xenobiotics biodegradation and metabolism	 Benzoate degradation
+map00364	2	Metabolism	Xenobiotics biodegradation and metabolism	 Fluorobenzoate degradation
+map00380	29	Metabolism	Amino acid metabolism	 Tryptophan metabolism
+map00400	33	Metabolism	Amino acid metabolism	 Phenylalanine, tyrosine and tryptophan biosynthesis
+map00401	3	Metabolism	Biosynthesis of other secondary metabolites	 Novobiocin biosynthesis
+map00404	1	Metabolism	Biosynthesis of other secondary metabolites	 Staurosporine biosynthesis
+map00405	6	Metabolism	Biosynthesis of other secondary metabolites	 Phenazine biosynthesis
+map00410	17	Metabolism	Metabolism of other amino acids	 beta-Alanine metabolism
+map00430	3	Metabolism	Metabolism of other amino acids	 Taurine and hypotaurine metabolism
+map00440	9	Metabolism	Metabolism of other amino acids	 Phosphonate and phosphinate metabolism
+map00450	11	Metabolism	Metabolism of other amino acids	 Selenocompound metabolism
+map00460	11	Metabolism	Metabolism of other amino acids	 Cyanoamino acid metabolism
+map00470	7	NA	NA	NA
+map00480	40	Metabolism	Metabolism of other amino acids	 Glutathione metabolism
+map00500	39	Metabolism	Carbohydrate metabolism	 Starch and sucrose metabolism
+map00510	56	Metabolism	Glycan biosynthesis and metabolism	 N-Glycan biosynthesis
+map00511	5	Metabolism	Glycan biosynthesis and metabolism	 Other glycan degradation
+map00513	56	Metabolism	Glycan biosynthesis and metabolism	 Various types of N-glycan biosynthesis
+map00514	13	Metabolism	Glycan biosynthesis and metabolism	 Other types of O-glycan biosynthesis
+map00515	5	Metabolism	Glycan biosynthesis and metabolism	 Mannose type O-glycan biosynthesis
+map00520	52	Metabolism	Carbohydrate metabolism	 Amino sugar and nucleotide sugar metabolism
+map00521	15	Metabolism	Biosynthesis of other secondary metabolites	 Streptomycin biosynthesis
+map00523	1	Metabolism	Metabolism of terpenoids and polyketides	 Polyketide sugar unit biosynthesis
+map00524	9	Metabolism	Biosynthesis of other secondary metabolites	 Neomycin, kanamycin and gentamicin biosynthesis
+map00531	3	Metabolism	Glycan biosynthesis and metabolism	 Glycosaminoglycan degradation
+map00541	9	NA	NA	NA
+map00561	31	Metabolism	Lipid metabolism	 Glycerolipid metabolism
+map00562	44	Metabolism	Carbohydrate metabolism	 Inositol phosphate metabolism
+map00563	50	Metabolism	Glycan biosynthesis and metabolism	 Glycosylphosphatidylinositol (GPI)-anchor biosynthesis
+map00564	72	Metabolism	Lipid metabolism	 Glycerophospholipid metabolism
+map00565	22	Metabolism	Lipid metabolism	 Ether lipid metabolism
+map00590	7	Metabolism	Lipid metabolism	 Arachidonic acid metabolism
+map00591	2	Metabolism	Lipid metabolism	 Linoleic acid metabolism
+map00592	9	Metabolism	Lipid metabolism	 alpha-Linolenic acid metabolism
+map00600	21	Metabolism	Lipid metabolism	 Sphingolipid metabolism
+map00603	2	Metabolism	Glycan biosynthesis and metabolism	 Glycosphingolipid biosynthesis - globo and isoglobo series
+map00604	3	Metabolism	Glycan biosynthesis and metabolism	 Glycosphingolipid biosynthesis - ganglio series
+map00620	60	Metabolism	Carbohydrate metabolism	 Pyruvate metabolism
+map00623	6	Metabolism	Xenobiotics biodegradation and metabolism	 Toluene degradation
+map00625	6	Metabolism	Xenobiotics biodegradation and metabolism	 Chloroalkane and chloroalkene degradation
+map00626	4	Metabolism	Xenobiotics biodegradation and metabolism	 Naphthalene degradation
+map00627	10	Metabolism	Xenobiotics biodegradation and metabolism	 Aminobenzoate degradation
+map00630	46	Metabolism	Carbohydrate metabolism	 Glyoxylate and dicarboxylate metabolism
+map00640	29	Metabolism	Carbohydrate metabolism	 Propanoate metabolism
+map00643	4	Metabolism	Xenobiotics biodegradation and metabolism	 Styrene degradation
+map00650	27	Metabolism	Carbohydrate metabolism	 Butanoate metabolism
+map00660	9	Metabolism	Carbohydrate metabolism	 C5-Branched dibasic acid metabolism
+map00670	22	Metabolism	Metabolism of cofactors and vitamins	 One carbon pool by folate
+map00680	27	Metabolism	Energy metabolism	 Methane metabolism
+map00710	18	Metabolism	Energy metabolism	 Carbon fixation in photosynthetic organisms
+map00720	21	Metabolism	Energy metabolism	 Carbon fixation pathways in prokaryotes
+map00730	33	Metabolism	Metabolism of cofactors and vitamins	 Thiamine metabolism
+map00740	18	Metabolism	Metabolism of cofactors and vitamins	 Riboflavin metabolism
+map00750	10	Metabolism	Metabolism of cofactors and vitamins	 Vitamin B6 metabolism
+map00760	30	Metabolism	Metabolism of cofactors and vitamins	 Nicotinate and nicotinamide metabolism
+map00770	31	Metabolism	Metabolism of cofactors and vitamins	 Pantothenate and CoA biosynthesis
+map00780	10	Metabolism	Metabolism of cofactors and vitamins	 Biotin metabolism
+map00785	2	Metabolism	Metabolism of cofactors and vitamins	 Lipoic acid metabolism
+map00790	20	Metabolism	Metabolism of cofactors and vitamins	 Folate biosynthesis
+map00791	9	Metabolism	Xenobiotics biodegradation and metabolism	 Atrazine degradation
+map00830	5	Metabolism	Metabolism of cofactors and vitamins	 Retinol metabolism
+map00860	27	Metabolism	Metabolism of cofactors and vitamins	 Porphyrin and chlorophyll metabolism
+map00900	35	Metabolism	Metabolism of terpenoids and polyketides	 Terpenoid backbone biosynthesis
+map00901	1	Metabolism	Biosynthesis of other secondary metabolites	 Indole alkaloid biosynthesis
+map00903	2	Metabolism	Metabolism of terpenoids and polyketides	 Limonene and pinene degradation
+map00908	3	Metabolism	Metabolism of terpenoids and polyketides	 Zeatin biosynthesis
+map00909	2	Metabolism	Metabolism of terpenoids and polyketides	 Sesquiterpenoid and triterpenoid biosynthesis
+map00910	23	Metabolism	Energy metabolism	 Nitrogen metabolism
+map00920	30	Metabolism	Energy metabolism	 Sulfur metabolism
+map00930	2	Metabolism	Xenobiotics biodegradation and metabolism	 Caprolactam degradation
+map00940	7	Metabolism	Biosynthesis of other secondary metabolites	 Phenylpropanoid biosynthesis
+map00950	6	Metabolism	Biosynthesis of other secondary metabolites	 Isoquinoline alkaloid biosynthesis
+map00960	6	Metabolism	Biosynthesis of other secondary metabolites	 Tropane, piperidine and pyridine alkaloid biosynthesis
+map00965	4	Metabolism	Biosynthesis of other secondary metabolites	 Betalain biosynthesis
+map00966	2	Metabolism	Biosynthesis of other secondary metabolites	 Glucosinolate biosynthesis
+map00970	53	Genetic Information Processing	Translation	 Aminoacyl-tRNA biosynthesis
+map00980	16	Metabolism	Xenobiotics biodegradation and metabolism	 Metabolism of xenobiotics by cytochrome P450
+map00981	2	Metabolism	Metabolism of terpenoids and polyketides	 Insect hormone biosynthesis
+map00982	15	Metabolism	Xenobiotics biodegradation and metabolism	 Drug metabolism - cytochrome P450
+map00983	26	Metabolism	Xenobiotics biodegradation and metabolism	 Drug metabolism - other enzymes
+map00998	3	Metabolism	Biosynthesis of other secondary metabolites	 Biosynthesis of various secondary metabolites - part 2
+map01040	21	Metabolism	Lipid metabolism	 Biosynthesis of unsaturated fatty acids
+map01051	2	Metabolism	Metabolism of terpenoids and polyketides	 Biosynthesis of ansamycins
+map01100	1297	Metabolism	Global and overview maps	 Metabolic pathways
+map01110	499	Metabolism	Global and overview maps	 Biosynthesis of secondary metabolites
+map01120	241	Metabolism	Global and overview maps	 Microbial metabolism in diverse environments
+map01200	140	Metabolism	Global and overview maps	 Carbon metabolism
+map01210	39	Metabolism	Global and overview maps	 2-Oxocarboxylic acid metabolism
+map01212	47	Metabolism	Global and overview maps	 Fatty acid metabolism
+map01220	9	Metabolism	Global and overview maps	 Degradation of aromatic compounds
+map01230	164	Metabolism	Global and overview maps	 Biosynthesis of amino acids
+map01240	181	NA	NA	NA
+map01250	33	NA	NA	NA
+map01501	1	Human Diseases	Drug resistance: antimicrobial	 beta-Lactam resistance
+map01503	3	Human Diseases	Drug resistance: antimicrobial	 Cationic antimicrobial peptide (CAMP) resistance
+map01521	13	Human Diseases	Drug resistance: antineoplastic	 EGFR tyrosine kinase inhibitor resistance
+map01522	8	Human Diseases	Drug resistance: antineoplastic	 Endocrine resistance
+map01523	14	Human Diseases	Drug resistance: antineoplastic	 Antifolate resistance
+map01524	33	Human Diseases	Drug resistance: antineoplastic	 Platinum drug resistance
+map02010	20	Environmental Information Processing	Membrane transport	 ABC transporters
+map02020	30	Environmental Information Processing	Signal transduction	 Two-component system
+map02024	26	Cellular Processes	Cellular community - prokaryotes	 Quorum sensing
+map02025	4	Cellular Processes	Cellular community - prokaryotes	 Biofilm formation - Pseudomonas aeruginosa
+map02026	1	Cellular Processes	Cellular community - prokaryotes	 Biofilm formation - Escherichia coli
+map03008	144	Genetic Information Processing	Translation	 Ribosome biogenesis in eukaryotes
+map03010	232	Genetic Information Processing	Translation	 Ribosome
+map03013	188	Genetic Information Processing	Translation	 RNA transport
+map03015	98	Genetic Information Processing	Translation	 mRNA surveillance pathway
+map03018	89	Genetic Information Processing	Folding, sorting and degradation	 RNA degradation
+map03020	40	Genetic Information Processing	Transcription	 RNA polymerase
+map03022	69	Genetic Information Processing	Transcription	 Basal transcription factors
+map03030	59	Genetic Information Processing	Replication and repair	 DNA replication
+map03040	154	Genetic Information Processing	Transcription	 Spliceosome
+map03050	58	Genetic Information Processing	Folding, sorting and degradation	 Proteasome
+map03060	36	Genetic Information Processing	Folding, sorting and degradation	 Protein export
+map03070	3	Environmental Information Processing	Membrane transport	 Bacterial secretion system
+map03320	24	Organismal Systems	Endocrine system	 PPAR signaling pathway
+map03410	42	Genetic Information Processing	Replication and repair	 Base excision repair
+map03420	77	Genetic Information Processing	Replication and repair	 Nucleotide excision repair
+map03430	39	Genetic Information Processing	Replication and repair	 Mismatch repair
+map03440	40	Genetic Information Processing	Replication and repair	 Homologous recombination
+map03450	16	Genetic Information Processing	Replication and repair	 Non-homologous end-joining
+map03460	44	Genetic Information Processing	Replication and repair	 Fanconi anemia pathway
+map04010	17	Environmental Information Processing	Signal transduction	 MAPK signaling pathway
+map04011	144	Environmental Information Processing	Signal transduction	 MAPK signaling pathway - yeast
+map04012	6	Environmental Information Processing	Signal transduction	 ErbB signaling pathway
+map04013	20	Environmental Information Processing	Signal transduction	 MAPK signaling pathway - fly
+map04014	19	Environmental Information Processing	Signal transduction	 Ras signaling pathway
+map04015	11	Environmental Information Processing	Signal transduction	 Rap1 signaling pathway
+map04016	12	Environmental Information Processing	Signal transduction	 MAPK signaling pathway - plant
+map04020	14	Environmental Information Processing	Signal transduction	 Calcium signaling pathway
+map04022	18	Environmental Information Processing	Signal transduction	 cGMP-PKG signaling pathway
+map04024	18	Environmental Information Processing	Signal transduction	 cAMP signaling pathway
+map04062	8	Organismal Systems	Immune system	 Chemokine signaling pathway
+map04064	7	Environmental Information Processing	Signal transduction	 NF-kappa B signaling pathway
+map04066	31	Environmental Information Processing	Signal transduction	 HIF-1 signaling pathway
+map04068	33	Environmental Information Processing	Signal transduction	 FoxO signaling pathway
+map04070	29	Environmental Information Processing	Signal transduction	 Phosphatidylinositol signaling system
+map04071	27	Environmental Information Processing	Signal transduction	 Sphingolipid signaling pathway
+map04072	18	Environmental Information Processing	Signal transduction	 Phospholipase D signaling pathway
+map04075	1	Environmental Information Processing	Signal transduction	 Plant hormone signal transduction
+map04110	92	Cellular Processes	Cell growth and death	 Cell cycle
+map04111	191	Cellular Processes	Cell growth and death	 Cell cycle - yeast
+map04113	148	Cellular Processes	Cell growth and death	 Meiosis - yeast
+map04114	66	Cellular Processes	Cell growth and death	 Oocyte meiosis
+map04115	14	Cellular Processes	Cell growth and death	 p53 signaling pathway
+map04120	81	Genetic Information Processing	Folding, sorting and degradation	 Ubiquitin mediated proteolysis
+map04122	10	Genetic Information Processing	Folding, sorting and degradation	 Sulfur relay system
+map04130	34	Genetic Information Processing	Folding, sorting and degradation	 SNARE interactions in vesicular transport
+map04136	50	Cellular Processes	Transport and catabolism	 Autophagy - other
+map04137	27	Cellular Processes	Transport and catabolism	 Mitophagy - animal
+map04138	141	Cellular Processes	Transport and catabolism	 Autophagy - yeast
+map04139	63	Cellular Processes	Transport and catabolism	 Mitophagy - yeast
+map04140	72	Cellular Processes	Transport and catabolism	 Autophagy - animal
+map04141	128	Genetic Information Processing	Folding, sorting and degradation	 Protein processing in endoplasmic reticulum
+map04142	48	Cellular Processes	Transport and catabolism	 Lysosome
+map04144	114	Cellular Processes	Transport and catabolism	 Endocytosis
+map04145	59	Cellular Processes	Transport and catabolism	 Phagosome
+map04146	67	Cellular Processes	Transport and catabolism	 Peroxisome
+map04150	84	Environmental Information Processing	Signal transduction	 mTOR signaling pathway
+map04151	45	Environmental Information Processing	Signal transduction	 PI3K-Akt signaling pathway
+map04152	46	Environmental Information Processing	Signal transduction	 AMPK signaling pathway
+map04210	13	Cellular Processes	Cell growth and death	 Apoptosis
+map04211	44	Organismal Systems	Aging	 Longevity regulating pathway
+map04212	39	Organismal Systems	Aging	 Longevity regulating pathway - worm
+map04213	38	Organismal Systems	Aging	 Longevity regulating pathway - multiple species
+map04214	12	Cellular Processes	Cell growth and death	 Apoptosis - fly
+map04215	5	Cellular Processes	Cell growth and death	 Apoptosis - multiple species
+map04216	15	Cellular Processes	Cell growth and death	 Ferroptosis
+map04217	42	Cellular Processes	Cell growth and death	 Necroptosis
+map04218	43	Cellular Processes	Cell growth and death	 Cellular senescence
+map04260	30	Organismal Systems	Circulatory system	 Cardiac muscle contraction
+map04261	18	Organismal Systems	Circulatory system	 Adrenergic signaling in cardiomyocytes
+map04270	10	Organismal Systems	Circulatory system	 Vascular smooth muscle contraction
+map04310	16	Environmental Information Processing	Signal transduction	 Wnt signaling pathway
+map04320	4	Organismal Systems	Development and regeneration	 Dorso-ventral axis formation
+map04330	7	Environmental Information Processing	Signal transduction	 Notch signaling pathway
+map04340	3	Environmental Information Processing	Signal transduction	 Hedgehog signaling pathway
+map04341	6	Environmental Information Processing	Signal transduction	 Hedgehog signaling pathway - fly
+map04350	10	Environmental Information Processing	Signal transduction	 TGF-beta signaling pathway
+map04360	13	Organismal Systems	Development and regeneration	 Axon guidance
+map04361	6	Organismal Systems	Development and regeneration	 Axon regeneration
+map04370	10	Environmental Information Processing	Signal transduction	 VEGF signaling pathway
+map04371	27	Environmental Information Processing	Signal transduction	 Apelin signaling pathway
+map04380	5	Organismal Systems	Development and regeneration	 Osteoclast differentiation
+map04390	18	Environmental Information Processing	Signal transduction	 Hippo signaling pathway
+map04391	13	Environmental Information Processing	Signal transduction	 Hippo signaling pathway - fly
+map04392	10	Environmental Information Processing	Signal transduction	 Hippo signaling pathway - multiple species
+map04510	17	Cellular Processes	Cellular community - eukaryotes	 Focal adhesion
+map04520	11	Cellular Processes	Cellular community - eukaryotes	 Adherens junction
+map04530	40	Cellular Processes	Cellular community - eukaryotes	 Tight junction
+map04540	10	Cellular Processes	Cellular community - eukaryotes	 Gap junction
+map04550	4	Cellular Processes	Cellular community - eukaryotes	 Signaling pathways regulating pluripotency of stem cells
+map04611	10	Organismal Systems	Immune system	 Platelet activation
+map04612	19	Organismal Systems	Immune system	 Antigen processing and presentation
+map04613	52	NA	NA	NA
+map04614	4	Organismal Systems	Endocrine system	 Renin-angiotensin system
+map04620	2	Organismal Systems	Immune system	 Toll-like receptor signaling pathway
+map04621	26	Organismal Systems	Immune system	 NOD-like receptor signaling pathway
+map04622	8	Organismal Systems	Immune system	 RIG-I-like receptor signaling pathway
+map04623	22	Organismal Systems	Immune system	 Cytosolic DNA-sensing pathway
+map04624	4	Organismal Systems	Immune system	 Toll and Imd signaling pathway
+map04625	9	Organismal Systems	Immune system	 C-type lectin receptor signaling pathway
+map04626	17	Organismal Systems	Environmental adaptation	 Plant-pathogen interaction
+map04630	5	Environmental Information Processing	Signal transduction	 Jak-STAT signaling pathway
+map04650	7	Organismal Systems	Immune system	 Natural killer cell mediated cytotoxicity
+map04657	12	Organismal Systems	Immune system	 IL-17 signaling pathway
+map04658	6	Organismal Systems	Immune system	 Th1 and Th2 cell differentiation
+map04659	11	Organismal Systems	Immune system	 Th17 cell differentiation
+map04660	14	Organismal Systems	Immune system	 T cell receptor signaling pathway
+map04662	7	Organismal Systems	Immune system	 B cell receptor signaling pathway
+map04664	10	Organismal Systems	Immune system	 Fc epsilon RI signaling pathway
+map04666	24	Organismal Systems	Immune system	 Fc gamma R-mediated phagocytosis
+map04668	3	Environmental Information Processing	Signal transduction	 TNF signaling pathway
+map04670	5	Organismal Systems	Immune system	 Leukocyte transendothelial migration
+map04710	13	Organismal Systems	Environmental adaptation	 Circadian rhythm
+map04711	3	Organismal Systems	Environmental adaptation	 Circadian rhythm - fly
+map04712	5	Organismal Systems	Environmental adaptation	 Circadian rhythm - plant
+map04713	4	Organismal Systems	Environmental adaptation	 Circadian entrainment
+map04714	161	Organismal Systems	Environmental adaptation	 Thermogenesis
+map04720	15	Organismal Systems	Nervous system	 Long-term potentiation
+map04721	36	Organismal Systems	Nervous system	 Synaptic vesicle cycle
+map04722	23	Organismal Systems	Nervous system	 Neurotrophin signaling pathway
+map04723	46	Organismal Systems	Nervous system	 Retrograde endocannabinoid signaling
+map04724	10	Organismal Systems	Nervous system	 Glutamatergic synapse
+map04725	2	Organismal Systems	Nervous system	 Cholinergic synapse
+map04726	5	Organismal Systems	Nervous system	 Serotonergic synapse
+map04727	11	Organismal Systems	Nervous system	 GABAergic synapse
+map04728	21	Organismal Systems	Nervous system	 Dopaminergic synapse
+map04730	7	Organismal Systems	Nervous system	 Long-term depression
+map04740	3	Organismal Systems	Sensory system	 Olfactory transduction
+map04744	3	Organismal Systems	Sensory system	 Phototransduction
+map04745	3	Organismal Systems	Sensory system	 Phototransduction - fly
+map04750	10	Organismal Systems	Sensory system	 Inflammatory mediator regulation of TRP channels
+map04810	40	Cellular Processes	Cell motility	 Regulation of actin cytoskeleton
+map04910	57	Organismal Systems	Endocrine system	 Insulin signaling pathway
+map04912	14	Organismal Systems	Endocrine system	 GnRH signaling pathway
+map04913	2	Organismal Systems	Endocrine system	 Ovarian steroidogenesis
+map04914	38	Organismal Systems	Endocrine system	 Progesterone-mediated oocyte maturation
+map04915	12	Organismal Systems	Endocrine system	 Estrogen signaling pathway
+map04916	5	Organismal Systems	Endocrine system	 Melanogenesis
+map04917	7	Organismal Systems	Endocrine system	 Prolactin signaling pathway
+map04918	7	Organismal Systems	Endocrine system	 Thyroid hormone synthesis
+map04919	33	Organismal Systems	Endocrine system	 Thyroid hormone signaling pathway
+map04920	16	Organismal Systems	Endocrine system	 Adipocytokine signaling pathway
+map04921	25	Organismal Systems	Endocrine system	 Oxytocin signaling pathway
+map04922	30	Organismal Systems	Endocrine system	 Glucagon signaling pathway
+map04923	2	Organismal Systems	Endocrine system	 Regulation of lipolysis in adipocytes
+map04924	6	Organismal Systems	Endocrine system	 Renin secretion
+map04925	4	Organismal Systems	Endocrine system	 Aldosterone synthesis and secretion
+map04926	5	Organismal Systems	Endocrine system	 Relaxin signaling pathway
+map04928	4	Organismal Systems	Endocrine system	 Parathyroid hormone synthesis, secretion and action
+map04929	2	Organismal Systems	Endocrine system	 GnRH secretion
+map04930	14	Human Diseases	Endocrine and metabolic disease	 Type II diabetes mellitus
+map04931	27	Human Diseases	Endocrine and metabolic disease	 Insulin resistance
+map04932	87	Human Diseases	Endocrine and metabolic disease	 Non-alcoholic fatty liver disease (NAFLD)
+map04933	5	Human Diseases	Endocrine and metabolic disease	 AGE-RAGE signaling pathway in diabetic complications
+map04934	10	Human Diseases	Endocrine and metabolic disease	 Cushing syndrome
+map04935	7	Organismal Systems	Endocrine system	 Growth hormone synthesis, secretion and action
+map04936	31	NA	NA	NA
+map04940	2	Human Diseases	Endocrine and metabolic disease	 Type I diabetes mellitus
+map04960	6	Organismal Systems	Excretory system	 Aldosterone-regulated sodium reabsorption
+map04961	5	Organismal Systems	Excretory system	 Endocrine and other factor-regulated calcium reabsorption
+map04962	20	Organismal Systems	Excretory system	 Vasopressin-regulated water reabsorption
+map04964	1	Organismal Systems	Excretory system	 Proximal tubule bicarbonate reclamation
+map04966	19	Organismal Systems	Excretory system	 Collecting duct acid secretion
+map04970	3	Organismal Systems	Digestive system	 Salivary secretion
+map04971	3	Organismal Systems	Digestive system	 Gastric acid secretion
+map04972	4	Organismal Systems	Digestive system	 Pancreatic secretion
+map04973	9	Organismal Systems	Digestive system	 Carbohydrate digestion and absorption
+map04974	2	Organismal Systems	Digestive system	 Protein digestion and absorption
+map04975	8	Organismal Systems	Digestive system	 Fat digestion and absorption
+map04976	8	Organismal Systems	Digestive system	 Bile secretion
+map04978	7	Organismal Systems	Digestive system	 Mineral absorption
+map04979	11	Organismal Systems	Digestive system	 Cholesterol metabolism
+map05010	193	Human Diseases	Neurodegenerative disease	 Alzheimer disease
+map05012	173	Human Diseases	Neurodegenerative disease	 Parkinson disease
+map05014	282	Human Diseases	Neurodegenerative disease	 Amyotrophic lateral sclerosis (ALS)
+map05016	211	Human Diseases	Neurodegenerative disease	 Huntington disease
+map05017	102	Human Diseases	Neurodegenerative disease	 Spinocerebellar ataxia
+map05020	158	Human Diseases	Neurodegenerative disease	 Prion diseases
+map05022	221	NA	NA	NA
+map05030	2	Human Diseases	Substance dependence	 Cocaine addiction
+map05031	14	Human Diseases	Substance dependence	 Amphetamine addiction
+map05032	2	Human Diseases	Substance dependence	 Morphine addiction
+map05033	2	Human Diseases	Substance dependence	 Nicotine addiction
+map05034	41	Human Diseases	Substance dependence	 Alcoholism
+map05100	21	Human Diseases	Infectious disease: bacterial	 Bacterial invasion of epithelial cells
+map05110	34	Human Diseases	Infectious disease: bacterial	 Vibrio cholerae infection
+map05120	30	Human Diseases	Infectious disease: bacterial	 Epithelial cell signaling in Helicobacter pylori infection
+map05130	47	Human Diseases	Infectious disease: bacterial	 Pathogenic Escherichia coli infection
+map05131	85	Human Diseases	Infectious disease: bacterial	 Shigellosis
+map05132	92	Human Diseases	Infectious disease: bacterial	 Salmonella infection
+map05133	7	Human Diseases	Infectious disease: bacterial	 Pertussis
+map05134	22	Human Diseases	Infectious disease: bacterial	 Legionellosis
+map05135	21	Human Diseases	Infectious disease: bacterial	 Yersinia infection
+map05140	9	Human Diseases	Infectious disease: parasitic	 Leishmaniasis
+map05142	7	Human Diseases	Infectious disease: parasitic	 Chagas disease (American trypanosomiasis)
+map05143	3	Human Diseases	Infectious disease: parasitic	 African trypanosomiasis
+map05145	8	Human Diseases	Infectious disease: parasitic	 Toxoplasmosis
+map05146	5	Human Diseases	Infectious disease: parasitic	 Amoebiasis
+map05152	40	Human Diseases	Infectious disease: bacterial	 Tuberculosis
+map05160	17	Human Diseases	Infectious disease: viral	 Hepatitis C
+map05161	13	Human Diseases	Infectious disease: viral	 Hepatitis B
+map05162	15	Human Diseases	Infectious disease: viral	 Measles
+map05163	18	Human Diseases	Infectious disease: viral	 Human cytomegalovirus infection
+map05164	28	Human Diseases	Infectious disease: viral	 Influenza A
+map05165	66	Human Diseases	Infectious disease: viral	 Human papillomavirus infection
+map05166	77	Human Diseases	Infectious disease: viral	 Human T-cell leukemia virus 1 infection
+map05167	25	Human Diseases	Infectious disease: viral	 Kaposi sarcoma-associated herpesvirus infection
+map05168	30	Human Diseases	Infectious disease: viral	 Herpes simplex virus 1 infection
+map05169	40	Human Diseases	Infectious disease: viral	 Epstein-Barr virus infection
+map05170	27	Human Diseases	Infectious disease: viral	 Human immunodeficiency virus 1 infection
+map05171	152	NA	NA	NA
+map05200	53	Human Diseases	Cancer: overview	 Pathways in cancer
+map05202	19	Human Diseases	Cancer: overview	 Transcriptional misregulation in cancer
+map05203	61	Human Diseases	Cancer: overview	 Viral carcinogenesis
+map05204	10	Human Diseases	Cancer: overview	 Chemical carcinogenesis
+map05205	24	Human Diseases	Cancer: overview	 Proteoglycans in cancer
+map05206	17	Human Diseases	Cancer: overview	 MicroRNAs in cancer
+map05207	24	NA	NA	NA
+map05208	119	NA	NA	NA
+map05210	13	Human Diseases	Cancer: specific types	 Colorectal cancer
+map05211	12	Human Diseases	Cancer: specific types	 Renal cell carcinoma
+map05212	11	Human Diseases	Cancer: specific types	 Pancreatic cancer
+map05213	11	Human Diseases	Cancer: specific types	 Endometrial cancer
+map05214	11	Human Diseases	Cancer: specific types	 Glioma
+map05215	14	Human Diseases	Cancer: specific types	 Prostate cancer
+map05216	6	Human Diseases	Cancer: specific types	 Thyroid cancer
+map05217	1	Human Diseases	Cancer: specific types	 Basal cell carcinoma
+map05218	3	Human Diseases	Cancer: specific types	 Melanoma
+map05219	2	Human Diseases	Cancer: specific types	 Bladder cancer
+map05220	6	Human Diseases	Cancer: specific types	 Chronic myeloid leukemia
+map05221	6	Human Diseases	Cancer: specific types	 Acute myeloid leukemia
+map05222	4	Human Diseases	Cancer: specific types	 Small cell lung cancer
+map05223	10	Human Diseases	Cancer: specific types	 Non-small cell lung cancer
+map05224	8	Human Diseases	Cancer: specific types	 Breast cancer
+map05225	24	Human Diseases	Cancer: specific types	 Hepatocellular carcinoma
+map05226	16	Human Diseases	Cancer: specific types	 Gastric cancer
+map05230	23	Human Diseases	Cancer: overview	 Central carbon metabolism in cancer
+map05231	20	Human Diseases	Cancer: overview	 Choline metabolism in cancer
+map05235	13	Human Diseases	Cancer: overview	 PD-L1 expression and PD-1 checkpoint pathway in cancer
+map05322	30	Human Diseases	Immune disease	 Systemic lupus erythematosus
+map05323	26	Human Diseases	Immune disease	 Rheumatoid arthritis
+map05340	3	Human Diseases	Immune disease	 Primary immunodeficiency
+map05410	9	Human Diseases	Cardiovascular disease	 Hypertrophic cardiomyopathy (HCM)
+map05412	1	Human Diseases	Cardiovascular disease	 Arrhythmogenic right ventricular cardiomyopathy (ARVC)
+map05414	1	Human Diseases	Cardiovascular disease	 Dilated cardiomyopathy (DCM)
+map05415	112	NA	NA	NA
+map05416	7	Human Diseases	Cardiovascular disease	 Viral myocarditis
+map05417	33	NA	NA	NA
+map05418	27	Human Diseases	Cardiovascular disease	 Fluid shear stress and atherosclerosis
