@@ -1,0 +1,25 @@
+#### glycosidase
+####  bacteria OR Fungi
+arabinofuranosidase
+arabinogalactan endo-1,4-beta-galactosidase
+arabinosidase
+arylsulfatase
+beta-glucanase
+beta-glucosidase
+cellobiose phosphorylase
+dextranase
+fucosidase
+galactosidase
+glucanase
+levanase
+maltodextrin glucosidase
+mannosidase
+pectate lyase
+polygalacturonase
+pullulanase
+rhamnogalacturonan endolyase
+rhamnosidase
+sialidase
+unsaturated glucuronyl hydrolase
+xylanase
+xyloglucan endo-beta-1,4-glucanase
