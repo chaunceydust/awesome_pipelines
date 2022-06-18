@@ -1,0 +1,218 @@
+[06/10/22 07:37:49]: /home/zhouxingchen/miniconda3/envs/funannotate/bin/funannotate setup -i all --busco_db all --database /home/zhouxingchen/DATABASE/funannotate_db
+
+[06/10/22 07:37:49]: OS: CentOS Linux 7, 208 cores, ~ 1056 GB RAM. Python: 3.7.12
+[06/10/22 07:37:49]: Running 1.8.9
+[06/10/22 07:37:49]: Database location: /home/zhouxingchen/DATABASE/funannotate_db
+[06/10/22 07:37:49]: Retrieving download links from GitHub Repo
+[06/10/22 07:37:50]: Parsing Augustus pre-trained species and porting to funannotate
+[06/10/22 07:37:51]: Downloading Merops database
+[06/10/22 07:37:52]: Downloading: http://ftp.ebi.ac.uk/pub/databases/merops/current_release/merops_scan.lib Bytes: 1957603
+[06/10/22 07:37:56]: Building diamond database
+[06/10/22 07:37:56]: diamond makedb --in merops.formatted.fa --db merops
+[06/10/22 07:37:57]: diamond v2.0.15.153 (C) Max Planck Society for the Advancement of Science
+Documentation, support and updates available at http://www.diamondsearch.org
+Please cite: http://dx.doi.org/10.1038/s41592-021-01101-x Nature Methods (2021)
+
+#CPU threads: 208
+Scoring parameters: (Matrix=BLOSUM62 Lambda=0.267 K=0.041 Penalties=11/1)
+Database input file: merops.formatted.fa
+Opening the database file...  [0s]
+Loading sequences...  [0.017s]
+Masking sequences...  [0.034s]
+Writing sequences...  [0.001s]
+Hashing sequences...  [0s]
+Loading sequences...  [0s]
+Writing trailer...  [0s]
+Closing the input file...  [0s]
+Closing the database file...  [0.001s]
+
+Database sequences  5009
+  Database letters  1276807
+     Database hash  d7da5f19e2e6398e9f4d95ec5ea3f1e9
+        Total time  0.055000s
+
+[06/10/22 07:37:57]: MEROPS Database: version=12.0 date=2017-10-04 records=5,009
+[06/10/22 07:37:57]: Downloading UniProtKB/SwissProt database
+[06/10/22 07:37:57]: Downloading: http://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/knowledgebase/complete/uniprot_sprot.fasta.gz Bytes: 91059014
+[06/10/22 07:42:28]: Downloading: http://ftp.ebi.ac.uk/pub/databases/uniprot/current_release/knowledgebase/complete/reldate.txt Bytes: 151
+[06/10/22 07:42:28]: Building diamond database
+[06/10/22 07:42:28]: diamond makedb --in uniprot_sprot.fasta --db uniprot
+[06/10/22 07:42:31]: diamond v2.0.15.153 (C) Max Planck Society for the Advancement of Science
+Documentation, support and updates available at http://www.diamondsearch.org
+Please cite: http://dx.doi.org/10.1038/s41592-021-01101-x Nature Methods (2021)
+
+#CPU threads: 208
+Scoring parameters: (Matrix=BLOSUM62 Lambda=0.267 K=0.041 Penalties=11/1)
+Database input file: uniprot_sprot.fasta
+Opening the database file...  [0s]
+Loading sequences...  [1.924s]
+Masking sequences...  [0.28s]
+Writing sequences...  [0.286s]
+Hashing sequences...  [0.122s]
+Loading sequences...  [0s]
+Writing trailer...  [0.009s]
+Closing the input file...  [0.001s]
+Closing the database file...  [0.002s]
+
+Database sequences  567483
+  Database letters  204940973
+     Database hash  2590cd5fd4e1d21854e99198a0725afc
+        Total time  2.629000s
+
+[06/10/22 07:42:32]: UniProtKB Database: version=2022_02 date=2022-04-27 records=567,483
+[06/10/22 07:42:32]: Downloading dbCAN database
+[06/10/22 07:42:33]: Downloading: http://bcb.unl.edu/dbCAN2/download/Databases/dbCAN-HMMdb-V8.txt Bytes: 94320446
+[06/10/22 07:42:43]: Downloading: http://bcb.unl.edu/dbCAN2/download/Databases/CAZyDB.07312019.fam-activities.txt Bytes: 63489
+[06/10/22 07:42:45]: Downloading: http://bcb.unl.edu/dbCAN2/download/Databases/dbCAN-old@UGA/readme.txt Bytes: 8098
+[06/10/22 07:42:45]: Creating dbCAN HMM database
+[06/10/22 07:42:45]: hmmpress -f dbCAN.hmm
+[06/10/22 07:42:48]: Working...    done.
+Pressed and indexed 641 HMMs (641 names and 9 accessions).
+Models pressed into binary file:   dbCAN.hmm.h3m
+SSI index for binary model file:   dbCAN.hmm.h3i
+Profiles (MSV part) pressed into:  dbCAN.hmm.h3f
+Profiles (remainder) pressed into: dbCAN.hmm.h3p
+
+[06/10/22 07:42:48]: dbCAN Database: version=10.0 date=2021-10-03 records=641
+[06/10/22 07:42:49]: Downloading Pfam database
+[06/10/22 07:42:49]: Downloading: http://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.hmm.gz Bytes: 293000230
+[06/10/22 07:50:41]: Downloading: http://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam-A.clans.tsv.gz Bytes: 358156
+[06/10/22 07:50:42]: Downloading: http://ftp.ebi.ac.uk/pub/databases/Pfam/current_release/Pfam.version.gz Bytes: 114
+[06/10/22 07:50:55]: Creating Pfam HMM database
+[06/10/22 07:50:55]: hmmpress -f Pfam-A.hmm
+[06/10/22 07:51:43]: Working...    done.
+Pressed and indexed 19632 HMMs (19632 names and 19632 accessions).
+Models pressed into binary file:   Pfam-A.hmm.h3m
+SSI index for binary model file:   Pfam-A.hmm.h3i
+Profiles (MSV part) pressed into:  Pfam-A.hmm.h3f
+Profiles (remainder) pressed into: Pfam-A.hmm.h3p
+
+[06/10/22 07:51:43]: Pfam Database: version=35.0 date=2021-11 records=19,632
+[06/10/22 07:51:43]: Downloading Repeat database
+[06/10/22 07:51:46]: Downloading: https://osf.io/vp87c/download?version=1 Bytes: 6325661
+[06/10/22 07:51:48]: Building diamond database
+[06/10/22 07:51:48]: diamond makedb --in funannotate.repeats.reformat.fa --db repeats -parse_seqids
+[06/10/22 07:51:48]: diamond v2.0.15.153 (C) Max Planck Society for the Advancement of Science
+Documentation, support and updates available at http://www.diamondsearch.org
+Please cite: http://dx.doi.org/10.1038/s41592-021-01101-x Nature Methods (2021)
+
+#CPU threads: 208
+Scoring parameters: (Matrix=BLOSUM62 Lambda=0.267 K=0.041 Penalties=11/1)
+Database input file: funannotate.repeats.reformat.fa
+Opening the database file...  [0s]
+Loading sequences...  [0.09s]
+Masking sequences...  [0.064s]
+Writing sequences...  [0.012s]
+Hashing sequences...  [0.004s]
+Loading sequences...  [0s]
+Writing trailer...  [0s]
+Closing the input file...  [0s]
+Closing the database file...  [0.001s]
+
+Database sequences  11950
+  Database letters  9920808
+     Database hash  448764dca1ff18a6fc151ac6d58d1cc9
+        Total time  0.174000s
+
+[06/10/22 07:51:48]: Repeat Database: version=1.0 date=2022-06-10 records=11,950
+[06/10/22 07:51:48]: Downloading GO Ontology database
+[06/10/22 07:51:50]: Downloading: http://purl.obolibrary.org/obo/go.obo Bytes: 33911393
+[06/10/22 07:51:54]: GO ontology version=2022-05-16 date=2022-05-16 records=47,305
+[06/10/22 07:51:54]: Downloading MiBIG Secondary Metabolism database
+[06/10/22 07:51:56]: Downloading: https://dl.secondarymetabolites.org/mibig/mibig_prot_seqs_1.4.fasta Bytes: 21244378
+[06/10/22 07:53:20]: Building diamond database
+[06/10/22 07:53:20]: diamond makedb --in mibig.fa --db mibig
+[06/10/22 07:53:20]: diamond v2.0.15.153 (C) Max Planck Society for the Advancement of Science
+Documentation, support and updates available at http://www.diamondsearch.org
+Please cite: http://dx.doi.org/10.1038/s41592-021-01101-x Nature Methods (2021)
+
+#CPU threads: 208
+Scoring parameters: (Matrix=BLOSUM62 Lambda=0.267 K=0.041 Penalties=11/1)
+Database input file: mibig.fa
+Opening the database file...  [0s]
+Loading sequences...  [0.147s]
+Masking sequences...  [0.13s]
+Writing sequences...  [0.026s]
+Hashing sequences...  [0.007s]
+Loading sequences...  [0s]
+Writing trailer...  [0s]
+Closing the input file...  [0s]
+Closing the database file...  [0.001s]
+
+Database sequences  31023
+  Database letters  18898150
+     Database hash  4353c282cd0f9e38827f42bca6312bde
+        Total time  0.315000s
+
+[06/10/22 07:53:20]: MiBIG Database: version=1.4 date=2022-06-10 records=31,023
+[06/10/22 07:53:20]: Downloading InterProScan Mapping file
+[06/10/22 07:53:21]: Downloading: http://ftp.ebi.ac.uk/pub/databases/interpro/interpro.xml.gz Bytes: 32189643
+[06/10/22 07:54:13]: Downloading: http://ftp.ebi.ac.uk/pub/databases/interpro/entry.list Bytes: 2169802
+[06/10/22 07:54:46]: InterProScan XML: version=89.0 date=2022-05-26 records=40,124
+[06/10/22 07:54:48]: Downloading pre-computed BUSCO outgroups
+[06/10/22 07:54:55]: Downloading: https://osf.io/r9sne/download?version=1 Bytes: 2374032
+[06/10/22 07:54:56]: BUSCO outgroups: version=1.0 date=2022-06-10 records=8
+[06/10/22 07:54:56]: Downloaded curated gene names and product descriptions
+[06/10/22 07:59:29]: Downloading: https://raw.githubusercontent.com/nextgenusfs/gene2product/master/ncbi_cleaned_gene_products.txt Bytes: 1365316
+[06/10/22 08:00:34]: Gene2Product: version=1.78 date=2022-05-27 records=34,160
+[06/10/22 08:00:34]: Downloading all 28 busco models
+[06/10/22 08:00:36]: Downloading: https://osf.io/xvzmu/download?version=1 Bytes: 12673693
+[06/10/22 08:00:39]: tar -zxf fungi.tar.gz
+[06/10/22 08:00:42]: Downloading: https://osf.io/r47nx/download?version=1 Bytes: 21181462
+[06/10/22 08:00:44]: tar -zxf microsporidia.tar.gz
+[06/10/22 08:00:47]: Downloading: https://osf.io/av6f8/download?version=1 Bytes: 66199252
+[06/10/22 08:00:50]: tar -zxf dikarya.tar.gz
+[06/10/22 08:00:55]: Downloading: https://osf.io/z2736/download?version=1 Bytes: 67966037
+[06/10/22 08:01:04]: tar -zxf ascomycota.tar.gz
+[06/10/22 08:01:08]: Downloading: https://osf.io/bj3sm/download?version=1 Bytes: 164636032
+[06/10/22 08:01:18]: tar -zxf pezizomycotina.tar.gz
+[06/10/22 08:01:27]: Downloading: https://osf.io/nvt3z/download?version=1 Bytes: 210241744
+[06/10/22 08:01:38]: tar -zxf eurotiomycetes.tar.gz
+[06/10/22 08:01:49]: Downloading: https://osf.io/r24kn/download?version=1 Bytes: 192011468
+[06/10/22 08:02:12]: tar -zxf sordariomycetes.tar.gz
+[06/10/22 08:02:23]: Downloading: https://osf.io/mpu2k/download?version=1 Bytes: 91857381
+[06/10/22 08:02:28]: tar -zxf saccharomycetes.tar.gz
+[06/10/22 08:02:34]: Downloading: https://osf.io/dhk47/download?version=1 Bytes: 72402218
+[06/10/22 08:02:38]: tar -zxf saccharomycetales.tar.gz
+[06/10/22 08:02:43]: Downloading: https://osf.io/2xnsj/download?version=1 Bytes: 68863784
+[06/10/22 08:02:51]: tar -zxf basidiomycota.tar.gz
+[06/10/22 08:02:55]: Downloading: https://osf.io/psj2k/download?version=1 Bytes: 13244593
+[06/10/22 08:02:57]: tar -zxf eukaryota.tar.gz
+[06/10/22 08:03:00]: Downloading: https://osf.io/a4tsk/download?version=1 Bytes: 9459518
+[06/10/22 08:03:01]: tar -zxf protists.tar.gz
+[06/10/22 08:03:04]: Downloading: https://osf.io/waqpe/download?version=1 Bytes: 10551644
+[06/10/22 08:03:06]: tar -zxf alveolata_stramenophiles.tar.gz
+[06/10/22 08:03:08]: Downloading: https://osf.io/5bvam/download?version=1 Bytes: 39476850
+[06/10/22 08:03:11]: tar -zxf metazoa.tar.gz
+[06/10/22 08:03:16]: Downloading: https://osf.io/u87d3/download?version=1 Bytes: 45483712
+[06/10/22 08:03:22]: tar -zxf nematoda.tar.gz
+[06/10/22 08:03:26]: Downloading: https://osf.io/w26ez/download?version=1 Bytes: 43933198
+[06/10/22 08:03:29]: tar -zxf arthropoda.tar.gz
+[06/10/22 08:03:33]: Downloading: https://osf.io/8qsa5/download?version=1 Bytes: 67256544
+[06/10/22 08:03:38]: tar -zxf insecta.tar.gz
+[06/10/22 08:03:43]: Downloading: https://osf.io/pxdqg/download?version=1 Bytes: 118029754
+[06/10/22 08:03:50]: tar -zxf endopterygota.tar.gz
+[06/10/22 08:03:57]: Downloading: https://osf.io/q4ce6/download?version=1 Bytes: 233690214
+[06/10/22 08:04:24]: tar -zxf hymenoptera.tar.gz
+[06/10/22 08:04:37]: Downloading: https://osf.io/e2n49/download?version=1 Bytes: 145735505
+[06/10/22 08:04:45]: tar -zxf diptera.tar.gz
+[06/10/22 08:04:54]: Downloading: https://osf.io/w6kf8/download?version=1 Bytes: 137371990
+[06/10/22 08:05:10]: tar -zxf vertebrata.tar.gz
+[06/10/22 08:05:19]: Downloading: https://osf.io/dj2cw/download?version=1 Bytes: 220677450
+[06/10/22 08:05:30]: tar -zxf actinopterygii.tar.gz
+[06/10/22 08:05:43]: Downloading: https://osf.io/bp4cf/download?version=1 Bytes: 209110833
+[06/10/22 08:06:09]: tar -zxf tetrapoda.tar.gz
+[06/10/22 08:06:21]: Downloading: https://osf.io/e7qym/download?version=1 Bytes: 137974970
+[06/10/22 08:06:28]: tar -zxf aves.tar.gz
+[06/10/22 08:06:38]: Downloading: https://osf.io/dvy5m/download?version=1 Bytes: 262985539
+[06/10/22 08:06:53]: tar -zxf mammalia.tar.gz
+[06/10/22 08:07:07]: Downloading: https://osf.io/p3nc7/download?version=1 Bytes: 315719027
+[06/10/22 08:07:25]: tar -zxf euarchontoglires.tar.gz
+[06/10/22 08:07:43]: Downloading: https://osf.io/2v9hj/download?version=1 Bytes: 286089494
+[06/10/22 08:08:16]: tar -zxf laurasiatheria.tar.gz
+[06/10/22 08:08:33]: Downloading: https://osf.io/m67p4/download?version=1 Bytes: 64919077
+[06/10/22 08:08:37]: tar -zxf embryophyta.tar.gz
+[06/10/22 08:08:40]: Funannoate setup complete. Add this to ~/.bash_profile or ~/.bash_aliases:
+
+	export FUNANNOTATE_DB=/home/zhouxingchen/DATABASE/funannotate_db
+
