@@ -1,0 +1,102 @@
+Plot over time
+========================================================
+
+Last updated: `r as.character(Sys.Date())`
+
+Code version: `r system("git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Data version: `r system("git --git-dir=../data/.git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Plot log2 fold change over time for full joint analysis (Fig 2B).
+
+```{r global-chunk-options, echo = FALSE}
+source("knitr_options.R")
+opts_chunk$set(fig.width = 12, fig.height = 12, warning = FALSE)
+```
+
+```{r}
+library("ggplot2")
+library("plyr")
+library("reshape2")
+```
+
+Log2 fold change measurements are stored in `fold-change.txt`.
+
+```{r input}
+dat_fc <- read.table("../data/fold-change.txt", header = TRUE,
+                     stringsAsFactors = FALSE)
+dat_fc[, c("dir", "extr", "rin", "mol", "index", "master.mix")] <- list(NULL)
+motifs <- read.table("../data/table-s3.txt", header = TRUE, sep = "\t",
+                     stringsAsFactors = FALSE)
+```
+
+Get the mean log2 fold change per bacterial infection (mean across individuals).
+
+```{r}
+dat_fc <- ddply(dat_fc, c("bact", "time"), colwise(mean, is.numeric))
+```
+
+Take the absolute value.
+
+```{r}
+dat_fc[, -1:-2] <- abs(dat_fc[, -1:-2])
+```
+
+Melt, add motifs, and average across bacterial infections.
+
+```{r}
+dat_melt <- melt(dat_fc, id.vars = c("bact", "time"), variable.name = "id",
+                 value.name = "log2fc")
+dat_motif <- merge(dat_melt, motifs, by = "id")
+dat_mean <- ddply(dat_motif, c("time", "bact", "full_time_course"), colwise(mean, is.numeric))
+```
+
+Order factors
+
+```{r}
+dat_mean$bact <- ordered(dat_mean$bact, levels = c("Rv", "Rv+", "GC", "BCG",
+                                               "Smeg", "Yers", "Salm", "Staph"))
+dat_mean$full_time_course <- ordered(dat_mean$full_time_course,
+                                     levels = c("non-DE", "All", "18 & 48 h",
+                                                "48 h", "18 h", "Yers-Salm"))
+```
+
+Color scheme
+
+```{r}
+library("RColorBrewer")
+my_cols <- brewer.pal(n = 9, name = "Greens")
+my_cols <- c(rev(my_cols)[1:5], "purple", "blue", "orange")
+```
+
+Plot
+
+```{r}
+plot_over_time <- ggplot(dat_mean, aes(x = time, y = log2fc, col = bact)) +
+  geom_line() + geom_point() +
+  facet_wrap(~ full_time_course, nrow = 2) +
+  labs(x = "Hours post-infection",
+       y = expression(paste("Mean ", log[2],
+                            " fold change in expression (absolute value)")),
+       col = "Bacteria") +
+  theme_bw(base_size = 18) + scale_x_continuous(breaks = c(4, 18, 48)) +
+  scale_colour_manual(values = my_cols) +
+  scale_y_continuous(limits = c(-.25, 3), breaks = 0:3, labels = 0:3) +
+  theme(legend.title = element_text(size = rel(1)),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank())
+plot_over_time
+```
+
+```{r}
+pdf("../figs/fig-02B-plot-over-time.pdf", width = 10, height = 7,
+    useDingbats = FALSE)
+plot_over_time
+dev.off()
+```
+
+```{r info}
+sessionInfo()
+```

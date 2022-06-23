@@ -1,0 +1,238 @@
+Identify genes in GO categories
+========================================================
+
+John Blischak
+
+Last updated: `r as.character(Sys.Date())`
+
+Code version: `r system("git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Data version: `r system("git --git-dir=../data/.git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+```{r global-chunk-options, echo = FALSE}
+source("knitr_options.R")
+opts_chunk$set(fig.width = 12, fig.height = 8, cache = FALSE)
+```
+
+```{r libraries, message = FALSE}
+library("topGO")
+```
+
+## Load data
+
+Import the motif results.
+
+```{r}
+table_s3 <- read.table("../data/table-s3.txt", header = TRUE, sep = "\t",
+                       stringsAsFactors = FALSE)
+```
+
+Import the GO results.
+
+```{r}
+go_18_all <- read.delim("../data/go-18-k5-All.txt",
+                        stringsAsFactors = FALSE)
+go_18_mtb <- read.delim("../data/go-18-k5-MTB.txt",
+                        stringsAsFactors = FALSE)
+go_18_non <- read.delim("../data/go-18-k5-non-DE.txt",
+                        stringsAsFactors = FALSE)
+go_18_vir <- read.delim("../data/go-18-k5-Virulent.txt",
+                        stringsAsFactors = FALSE)
+go_18_yer <- read.delim("../data/go-18-k5-Yers-Salm.txt",
+                        stringsAsFactors = FALSE)
+go_48_all <- read.delim("../data/go-48-k5-All.txt",
+                        stringsAsFactors = FALSE)
+go_48_mtb <- read.delim("../data/go-48-k5-MTB.txt",
+                        stringsAsFactors = FALSE)
+go_48_non <- read.delim("../data/go-48-k5-non-DE.txt",
+                        stringsAsFactors = FALSE)
+go_48_vir <- read.delim("../data/go-48-k5-Virulent.txt",
+                        stringsAsFactors = FALSE)
+go_48_yer <- read.delim("../data/go-48-k5-Yers-Salm.txt",
+                        stringsAsFactors = FALSE)
+go_all_18_48 <- read.delim("../data/go-all-k6-18 & 48 h.txt",
+                        stringsAsFactors = FALSE)
+go_all_18 <- read.delim("../data/go-all-k6-18 h.txt",
+                        stringsAsFactors = FALSE)
+go_all_48 <- read.delim("../data/go-all-k6-48 h.txt",
+                        stringsAsFactors = FALSE)
+go_all_all <- read.delim("../data/go-all-k6-All.txt",
+                        stringsAsFactors = FALSE)
+go_all_non <- read.delim("../data/go-all-k6-non-DE.txt",
+                        stringsAsFactors = FALSE)
+go_all_yer <- read.delim("../data/go-all-k6-Yers-Salm.txt",
+                        stringsAsFactors = FALSE)
+```
+
+## Create GO data
+
+Create a topGO object with fake DE data.
+This does not matter because only need the available universe of genes.
+I get the significance results from the text files loaded above.
+The GO analysis is too slow to run repeatedly.
+
+```{r create-go-data}
+gene_universe <- rep(c(0, 1), each = nrow(table_s3) / 2)
+gene_universe <- factor(gene_universe)
+names(gene_universe) <- table_s3$id
+go_data <- new("topGOdata",
+               ontology = "BP",
+               allGenes = gene_universe,
+               nodeSize = 5,
+               annotationFun = annFUN.org,
+               mapping = "org.Hs.eg",
+               ID = "ensembl")
+```
+
+## Function for finding intersection
+
+```{r}
+find_genes <- function(go_id, m_genes, m_names, go_data) {
+  # go_id: GO ID
+  # m_genes: list of candidate Ensembl gene IDs
+  # m_names: list of names corresponding to m_genes
+  # go_data: the topGO object which contains the GO database mappings
+  go_genes <- genesInTerm(go_data, go_id)[[1]]
+  total_go <- length(go_genes)
+  total_m <- length(m_genes)
+  hits <- which(m_genes %in% go_genes)
+  cat(sprintf("%d genes are shared between the %d candidate genes and the %d genes in the GO category",
+              length(hits), total_m, total_go))
+  result <- data.frame(id = m_genes[hits],
+                       name = m_names[hits],
+                       stringsAsFactors = FALSE)
+  return(result)
+}
+```
+
+## Fig2 - Full time course
+
+### All
+
+```{r}
+go_all_all[grep("GO:0060337", go_all_all$GO.ID), ]
+interferon_2 <- find_genes(go_id = "GO:0060337",
+                  m_genes = table_s3$id[table_s3$full_time_course == "All"],
+                  m_names = table_s3$name[table_s3$full_time_course == "All"],
+                  go_data = go_data)
+cat(sort(interferon_2$name))
+go_all_all[grep("GO:0002739", go_all_all$GO.ID), ]
+cytokine_2 <- find_genes(go_id = "GO:0002739",
+                  m_genes = table_s3$id[table_s3$full_time_course == "All"],
+                  m_names = table_s3$name[table_s3$full_time_course == "All"],
+                  go_data = go_data)
+cat(sort(cytokine_2$name))
+go_all_all[grep("GO:2000109", go_all_all$GO.ID), ]
+apop_3 <- find_genes(go_id = "GO:2000109",
+                  m_genes = table_s3$id[table_s3$full_time_course == "All"],
+                  m_names = table_s3$name[table_s3$full_time_course == "All"],
+                  go_data = go_data)
+cat(sort(apop_3$name))
+go_all_all[grep("GO:0008630", go_all_all$GO.ID), ]
+apop_4 <- find_genes(go_id = "GO:0008630",
+                  m_genes = table_s3$id[table_s3$full_time_course == "All"],
+                  m_names = table_s3$name[table_s3$full_time_course == "All"],
+                  go_data = go_data)
+cat(sort(apop_4$name))
+```
+
+### 18 & 48 h
+
+```{r}
+go_all_18_48[grep("GO:0050766", go_all_18_48$GO.ID), ]
+phago <- find_genes(go_id = "GO:0050766",
+                  m_genes = table_s3$id[table_s3$full_time_course == "18 & 48 h"],
+                  m_names = table_s3$name[table_s3$full_time_course == "18 & 48 h"],
+                  go_data = go_data)
+cat(sort(phago$name))
+```
+
+## Fig3 - 18 hour analysis
+
+### MTB
+
+```{r}
+go_18_mtb[grep("monocyte", go_18_mtb$Term), ]
+mtb_mono <- find_genes(go_id = "GO:0045657",
+                  m_genes = table_s3$id[table_s3$time_18h == "MTB"],
+                  m_names = table_s3$name[table_s3$time_18h == "MTB"],
+                  go_data = go_data)
+cat(sort(mtb_mono$name))
+```
+
+```{r}
+go_18_mtb[grep("vesicle", go_18_mtb$Term), ]
+mtb_vesicle <- find_genes(go_id = "GO:0031338",
+                  m_genes = table_s3$id[table_s3$time_18h == "MTB"],
+                  m_names = table_s3$name[table_s3$time_18h == "MTB"],
+                  go_data = go_data)
+cat(sort(mtb_vesicle$name))
+```
+
+### Virulent
+
+```{r}
+go_18_vir[grep("GTPase", go_18_vir$Term), ]
+vir_gtp <- find_genes(go_id = "GO:0051057",
+                  m_genes = table_s3$id[table_s3$time_18h == "Virulent"],
+                  m_names = table_s3$name[table_s3$time_18h == "Virulent"],
+                  go_data = go_data)
+cat(sort(vir_gtp$name))
+```
+
+
+## Fig4 - 48 hour analysis
+
+### MTB
+
+```{r}
+go_48_mtb[grep("itamin", go_48_mtb$Term), ]
+vit_d <- find_genes(go_id = "GO:0033280",
+                  m_genes = table_s3$id[table_s3$time_48h == "MTB"],
+                  m_names = table_s3$name[table_s3$time_48h == "MTB"],
+                  go_data = go_data)
+cat(sort(vit_d$name))
+```
+
+AQP3 is an aquaporin.
+
+CXCL10 is also known as Interferon gamma-induced protein 10.
+
+PIM1 is involved in cytokine signaling.
+
+http://www.biomedcentral.com/1471-2199/13/18/
+
+TNC is a glycoprotein regulated by growth factors.
+
+### Virulent
+
+```{r}
+go_48_vir[grep("macrophage", go_48_vir$Term), ]
+mac_activation <- find_genes(go_id = "GO:0043032",
+                  m_genes = table_s3$id[table_s3$time_48h == "Virulent"],
+                  m_names = table_s3$name[table_s3$time_48h == "Virulent"],
+                  go_data = go_data)
+cat(sort(mac_activation$name))
+```
+
+DE in cattle in response to _M. bovis_
+
+http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0041066#s3
+
+Another DE study in mononuclear cells.
+
+http://www.sciencedirect.com/science/article/pii/S016158900700795X
+
+```{r}
+go_48_vir[grep("antigen", go_48_vir$Term), ]
+vir_antigen <- find_genes(go_id = "GO:0002580",
+                  m_genes = table_s3$id[table_s3$time_48h == "Virulent"],
+                  m_names = table_s3$name[table_s3$time_48h == "Virulent"],
+                  go_data = go_data)
+cat(sort(vir_antigen$name))
+```
+
+
+```{r info}
+sessionInfo()
+```

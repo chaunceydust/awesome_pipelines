@@ -1,0 +1,898 @@
+Expression of candidate genes
+========================================================
+
+John Blischak
+
+Last updated: `r as.character(Sys.Date())`
+
+Code version: `r system("git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Data version: `r system("git --git-dir=../data/.git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Generated in this file:
+
+*  Figure S6 - DUSP14
+*  FIgure S8 - TNF, IL6, and IL10 for H37Rv and GC1237
+
+Below I explore the expression patterns of potentially interesting genes that I have found in the literature.
+
+The next step in this analysis is to incorporate the results of the DE analysis to complement the visual inspection.
+
+```{r global-chunk-options, echo = FALSE}
+source("knitr_options.R")
+opts_chunk$set(fig.width = 12, fig.height = 12, warning = FALSE)
+```
+
+```{r packages, message = FALSE}
+library(biomaRt)
+library(ggplot2)
+library(plyr)
+library(edgeR)
+```
+
+The read counts are standardized, normalized, and log2 transformed using the function `cpm` from edgeR.
+The standardization is computing the number of reads per gene per million exonic reads, also known as counts per million (cpm).
+The normalization is using the adjusted library sizes calculated with the TMM normalizaztion of [Robinson & Oshlack, 2010][robinson].
+A psuedocount of 0.25 (the default) is added to avoid taking the logarithm of zero.
+
+[robinson]: http://genomebiology.com/2010/11/3/r25
+
+```{r input}
+dat_cpm <- read.table("../data/table-s1.txt", sep = "\t", header = TRUE,
+                      stringsAsFactors = FALSE)
+rownames(dat_cpm) <- dat_cpm$id
+dat_cpm[, c("id", "name")] <- list(NULL)
+anno <- read.table("../data/annotation.txt", header = TRUE,
+                   stringsAsFactors = FALSE)
+# Order the bacteria
+anno$bact <- ordered(anno$bact, levels = c("none", "Rv", "Rv+", "GC", "BCG",
+                                           "Smeg", "Yers", "Salm", "Staph"))
+dat <- data.frame(anno, t(dat_cpm))
+```
+
+I obtain the ENSEMBL gene IDs for each gene symbol by querying Biomart.
+
+```{r get-ensembl-gene-ids}
+candidates <- c("CCL1", "IL1B", "IL6", "ATP6V1H", "CD1A", "CD83", "IL12B",
+                "RAB9A", "SOCS2", "IL10", "TGFB1", "LTA4H", "RAB32", "MIF",
+                "DUSP14", "NCF2", "CYP27B1", "TSPAN13", "CMAS", "MYOM1",
+                "SLC11A1", "SP110", "CISH", "TLR2", "IRGM", "IFNGR1", "TIRAP",
+                "IFNG", "CCL2", "CD209", "MC3R", "AHRR", "AHR", "TNF", "CD1C",
+                "IL15")
+# ensembl <- useMart("ensembl", dataset = "hsapiens_gene_ensembl")
+ensembl <- useMart(host = "sep2013.archive.ensembl.org",
+                   biomart = "ENSEMBL_MART_ENSEMBL",
+                   dataset = "hsapiens_gene_ensembl")
+gene_names <- getBM(attributes = c("ensembl_gene_id", "uniprot_genename"),
+                        filters = "uniprot_genename",
+                        values = candidates,
+                        mart = ensembl)
+gene_names <- gene_names[grep("ENSG", gene_names$ensembl_gene_id), ]
+gene_names <- gene_names[gene_names$ensembl_gene_id %in% rownames(dat_cpm), ]
+```
+
+I obtain the log2 fold change in expression for each individual:bacteria:time combination by subtracting the log2 cpm for the non-infected cells for that individual:timepoint from its log2 cpm.
+I subtract the log2 cpm of the control instead of dividing because of the logarithm rule: log(A/B) = log(A) - log(B).
+
+```{r log2-fold-change}
+controls <- dat[dat$bact == "none", ]
+dat <- dat[dat$bact != "none", ]
+dat <- droplevels(dat)
+controls <- droplevels(controls)
+dat_fc <- dat
+gene_cols <- grep("ENSG", colnames(dat))
+for (i in 1:nrow(dat)) {
+  ind <- dat[i, "ind"]
+  tp <- dat[i, "time"]
+  dat_fc[i, gene_cols] <- dat[i, gene_cols] - controls[controls$ind == ind &
+                                                       controls$time == tp,
+                                                       gene_cols]
+}
+# Sanity check
+for (g in gene_names$ensembl_gene_id) {
+  stopifnot(
+    dat_fc[dat_fc$ind == "M375" & dat_fc$time == 18 & dat_fc$bact == "BCG", g] ==
+      dat[dat$ind == "M375" & dat$time == 18 & dat$bact == "BCG", g] -
+             controls[controls$ind == "M375" & controls$time == 18, g])
+}
+```
+
+```{r save-fold-change}
+write.table(dat_fc, "../data/fold-change.txt", quote = FALSE, sep = "\t",
+            row.names = FALSE)
+```
+
+```{r subset-fold-change}
+dat_fc <- dat_fc[, c("ind", "bact", "time", gene_names$ensembl_gene_id)]
+```
+
+For each gene, I plot the log2 fold change in expression across time separately for each bacterial infection.
+Each colored dashed line corresponds to the data for one of the six individuals.
+The think red line highlights the horizontal line, x = 0, because it signifies no change in expression compared to the non-infected cells.
+The thick black line is the loess curve summarizing the fold change across all six individuals.
+`ggplot2` throws many `warnings` about the [LOESS][] curve, which is not surprising due to the small sample size of six.
+However this is not a cause for concern because the LOESS curve is simply being used as a visual aid and not for use in any statistical model.
+
+**NOTE**: Pay special attention to the y-axis.
+It is constant within a gene, but changes across genes.
+
+[LOESS]: https://en.wikipedia.org/wiki/Loess_curve
+
+```{r plot-function}
+plot_gene <- ggplot(data = NULL, aes(x = time, y = g, color = ind)) +
+  geom_line(size = 1.5, linetype = "dashed") + facet_wrap(~ bact, nrow = 2) +
+  geom_smooth(method = "loess", aes(group = bact), color = "black", size = 3,
+              se = FALSE) +
+  geom_hline(yintercept = 0, color = "red", size = 2) +
+  labs(x = "Hours post-infection", y = "log2 fold change in expression") +
+  theme_bw(base_size = 28) + scale_x_continuous(breaks = c(4, 18, 48)) +
+  theme(plot.title = element_text(size = rel(2)))
+```
+
+I also investigate the results of the joint Bayesian analysis for these genes.
+
+```{r}
+motifs <- read.table("../data/table-s3.txt", header = TRUE, sep = "\t",
+                     stringsAsFactors = FALSE)
+```
+
+Importing the results from the differential expression analysis with limma for checking the results of individual pairwise tests:
+
+```{r}
+stats <- read.table("../data/de-stats.txt", header = TRUE,
+                    stringsAsFactors = FALSE)
+head(stats)
+```
+
+## CCL1
+
+[Thuong et al. 2008][thuong] observed a stronger induction of CCL1 in macrophages of individuals recovered from active TB compared to those with latent TB.
+Furthermore, they found significant SNPs in CCL1 in a case-control study genetic assocation study of tuberculosis.
+The patterns in this data are interesting for two reasons.
+First, there is stronger induction in the _Mycobacteria_ species compared to _Salmonella_ and _Yersinisia_ (_Staphylococcus_ seems similarly induced as the _Mycobacteria_).
+This further supports the idea that this gene is specifically important in response to infection with _Mycobacteria_.
+Second, individual M375 is a clear outlier with no induction of CCL1.
+This suggests that M375 may have a different genetic background at this locus affecting the expression of CCL1 in reponse to MTB infection (and potentially susceptibility to developing active TB).
+It would be really interesting if I could find evidence of coding variation differences between M375 and the other five individuals by calling SNPs in the RNA-seq reads.
+
+CCL1 was not identified as an eQTL in dendritic cells.
+
+[thuong]: http://www.plospathogens.org/article/info%3Adoi%2F10.1371%2Fjournal.ppat.1000229
+
+```{r CCL1}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "CCL1"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "CCL1")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "CCL1"], ]
+```
+
+## IL1B
+
+[Tailleux et al. 2008][tailleux] found that interleukin 1 Beta (IL1B) was more strongly upregulated post-infection in macrophages comapred to DCs, which had also been observed in previous studies.
+Consistently, I see strong up-reguation of this gene in response to infection.
+It appears to be a general response mechanism because it is highly induced across all the bacterial infections.
+
+[tailleux]: http://www.plosone.org/article/info%3Adoi%2F10.1371%2Fjournal.pone.0001403
+
+```{r IL1B}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "IL1B"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "IL1B")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "IL1B"], ]
+```
+
+## IL6
+
+[Tailleux et al. 2008][tailleux] found that interleukin 6 (IL6) was more strongly upregulated post-infection in macrophages comapred to DCs, which had also been observed in previous studies.
+Consistently, I see strong up-reguation of this gene in response to infection.
+It appears to be a general response mechanism because it is highly induced across all the bacterial infections.
+
+```{r IL6}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "IL6"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "IL6")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "IL6"], ]
+```
+
+## ATP6V1H
+
+[Tailleux et al. 2008][tailleux] found that ATP6V1H was strongly upregulated post-infection in macrophages whereas it was barely expressed at all in DCs.
+ATP6V1H encodes the V1 subunit of v-ATPase, which is repsonsible for ATP hydrolysis.
+This is especially interesting because it has been observed that phagosomes containing MTB avoid fusion with intracellualr vesicles containing v-ATPase.
+Thus this would prevent the acidification of the phagosome and promote the chance of survival of the latent bacteria.
+Consistent with their results, I find ATP6V1H upregulated at 18 and 48 hours post-infection.
+However, it is not **strong** induction in this data (and is actually similar to the induction of CD1A below, which is not supposed to be incuded in macrophages).
+Furthermore, this data does not support this as the result of a MTB-specific immune evasion tactic since it is similarly induced in response to all the bacteria.
+
+```{r ATP6V1H}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "ATP6V1H"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "ATP6V1H")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "ATP6V1H"], ]
+```
+
+## CD1A
+
+[Tailleux et al. 2008][tailleux] found that CD1A was less strongly upregulated post-infection in macrophages comapred to DCs, which had also been observed in previous studies.
+Consistent with this result, the expression of this gene is not strongly induced.
+Furthremore, it appears to be repressed after infection with _Salmonella_ or _Yersinia_.
+
+```{r CD1A}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "CD1A"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "CD1A")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "CD1A"], ]
+```
+
+## CD83
+
+[Tailleux et al. 2008][tailleux] found that CD83 was upregulated post-infection only in DCs and not macrophages, which had also been observed in previous studies.
+In this dataset, CD83 expression is quite variable, with some individuals actually showing a clear induction of CD83 expression.
+
+```{r CD83}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "CD83"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "CD83")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "CD83"], ]
+```
+
+## IL12p40 (IL12B)
+
+[Tailleux et al. 2008][tailleux] found that interleukin 12p40 (IL12B) was upregulated post-infection only in DCs and not macrophages, which had also been observed in previous studies.
+On the contrary, I observe strong induction of this gene.
+
+```{r IL12B}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "IL12B"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "IL12B")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "IL12B"], ]
+```
+
+## RAB9A
+
+[Tailleux et al. 2008][tailleux] found that RAB9A was upregulated post-infection only in DCs and barely expressed in macrophages.
+RAB9A is a GTPase involved in transporting hydrolases from the Golgi to lysosomes.
+Consistently, RAB9A was not induced in this dataset.
+
+```{r RAB9A}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "RAB9A"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "RAB9A")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "RAB9A"], ]
+```
+
+## SOCS2
+
+[Tailleux et al. 2008][tailleux] found that SOCS2 was upregulated post-infection only in DCs and barely expressed in macrophages.
+Inconsistently, SOCS2 was induced in this dataset, though the induction is variable across individuals.
+
+```{r SOCS2}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "SOCS2"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "SOCS2")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "SOCS2"], ]
+```
+
+## IL10
+
+```{r IL10}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "IL10"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "IL10")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "IL10"], ]
+```
+
+## TGFB1
+
+```{r TFGB1}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "TGFB1"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "TGFB1")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "TGFB1"], ]
+```
+
+## LTA4H
+
+[Tobin et al. 2010][tobin] found that the activity level of LTA4H affected the outcome of _Mycobacteria_ infection in zebrafish and humans.
+However, while its reduction led to increased infection, the mRNA was not induced upon infection.
+Consistent with a non-transcriptional mechanism, LTA4H is not induced in this dataset.
+
+[tobin]: http://www.sciencedirect.com/science/article/pii/S0092867410001285
+
+```{r LTA4H}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "LTA4H"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "LTA4H")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "LTA4H"], ]
+```
+
+## RAB32
+
+[Seto et al.][seto] found that Rab GTPases, which regulate phagosome maturation, were differentially located within macrophages infected with MTB compared to those infected with _Staphylococcus aureus_.
+This does not suggest a transcriptional mechanism, but interestingly the expression of RAB32 decreases over time.
+This is an interesting pattern and could potentially be a virulence mechanism of the bacteria (i.e. shutting down phagosome maturation completely).
+
+[seto]: http://onlinelibrary.wiley.com/doi/10.1111/j.1600-0854.2011.01165.x/abstract
+
+```{r RAB32}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "RAB32"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "RAB32")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "RAB32"], ]
+```
+
+## MIF
+
+[Das et al., 2013][das2013] studied the role of macrophage migration inhibitory factor (MIF) in the response to MTB infection.
+Individuals with genetic polymorhpisms that decrease expression of MIF are more susceptible to developing active TB.
+They found an increase in MIF transcription at 4-6 hours post-infection in human THP-1 cells.
+However, I do not observe this induction in my cells.
+Furthermore, at 18 hours MIF is in the "non-DE" motif.
+
+[das2013]: http://www.pnas.org/content/110/32/E2997.long
+
+```{r MIF}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "MIF"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "MIF")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "MIF"], ]
+```
+
+## DUSP14
+
+[Barreiro et al., 2012][barreiro2012] identified an reQTL for DUSP14 only in the non-infected state.
+They also found that the reQTL had a significant GWAS p-value when the tests were limited to only reQTLs.
+
+[barreiro2012]: http://www.pnas.org/content/109/4/1204.long
+
+Also, the DiRienzo lab is interested in DUSP14 because it is upregulated in response to treatment with vitamin D.
+
+```{r DUSP14}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "DUSP14"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "DUSP14")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "DUSP14"], ]
+```
+
+DUSP14 was classified as not differentially expressed at 18 hours post-infection.
+However, visual inspection revealed that DUSP14 was upregulated at 18 post-infection with MTB H37Rv, heat-inactivated MTB H37Rv, MTB GC1237, and BCG; and downregulated post-infection with _S. typhimurium_.
+Due to the low effect size and substantial interindividual variation in DUSP14 expression (and also the modest sample size in this study), these observed changes for DUSP14 were significant only at an FDR of 10% and not at 5% as used in the differential expression analysis, with the expception of infection with heat-inactivated MTB H37Rv (FDR &#8776; 22%).
+
+```{r}
+stats[stats$time == 18 &
+      stats$gene == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "DUSP14"],
+      c("test", "logFC", "adj.P.Val")]
+```
+
+### Figure S6
+
+Make boxplot of DUSP14 at 18 hours post-infection.
+
+```{r}
+library("RColorBrewer")
+my_cols <- brewer.pal(n = 9, name = "Greens")
+my_cols <- c(rev(my_cols)[1:5], "purple", "blue", "orange")
+dusp14 <- ggplot(data = dat_temp[dat_temp$time == 18, ], aes(x = bact, y = g, fill = bact)) +
+  geom_boxplot(lwd = 1) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(x = "Bacterial infection", title = "DUSP14 - 18 hrs post-infection",
+       y = expression(paste(log[2], " fold change in expression"))) +
+  theme_bw(base_size = 8) +
+  theme(plot.title = element_text(size = rel(2))) +
+  theme(line = element_line(size = 1), rect = element_rect(size = 1)) +
+  scale_fill_manual(values = my_cols) + theme(legend.position="none",
+                                              text = element_text(size = 16),
+                                              plot.title = element_text(size = rel(1)))
+dusp14
+```
+
+```{r}
+pdf("../figs/fig-S06-dusp14.pdf", width = 8, height = 5, useDingbats = FALSE)
+dusp14
+dev.off()
+```
+
+## NCF2
+
+[NCF2][] is neutrophil cytosolic factor 2.
+It is a subunit of an oxidase complex known to be responsible for creating superoxide that gets delivered to phagosomes (at least in neutrophils).
+Furthermore, [loss-of-function mutations in NCF2][omim] lead to [chronic granulatomous disease][CGD], which involves the formation of granulomas in many tissues because ingested bacteria cannot be killed due to the lack of reactive oxygen species.
+Lastly, lower expression of NCF2 causes susceptibility to infection with _Salmonella Typhimurium_ in mice ([Sancho-Shimizu et al. 2006][Sancho2006]).
+
+[NCF2]: http://www.ncbi.nlm.nih.gov/gene?Db=gene&Cmd=ShowDetailView&TermToSearch=4688
+[CGD]: https://en.wikipedia.org/wiki/Chronic_granulomatous_disease
+[omim]: http://omim.org/entry/608515?search=ncf2&highlight=ncf2
+[Sancho2006]: http://www.ncbi.nlm.nih.gov/pubmed/16709856
+
+In my data, NCF2 was categorized as "18 & 48 h" for the full analysis and as _Mycobacteria_-specific at both 18 and 48 hours.
+It is clearly upregulated at later time points for all the _Mycobacteria_ species.
+It also shows a spike at 4 hours for the _Salmonella_, consistent with its role in fighting infection of this bacteria.
+Lastly, there is a decent amount of interindividual heterogeneity.
+
+```{r NCF2}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "NCF2"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "NCF2")
+```
+
+```{r NCF2-boxplot}
+library("RColorBrewer")
+my_cols <- brewer.pal(n = 6, name = "Greens")
+my_cols <- c(rev(my_cols)[1:5], rep("white", 3))
+ggplot(dat_temp, aes(x = bact, y = g)) + geom_boxplot(lwd = 2, fill = my_cols) +
+  labs(x = "Bacterial infection", y = strwrap("Log2 fold change", width = 30)) +
+  theme_bw(base_size = 24) + theme(axis.text.x = element_blank())
+ggsave("ncf2-boxplot.png", width = 10, height = 5, units = "in")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "NCF2"], ]
+```
+
+## CYP27B1
+
+CYP27B1 is another gene upregulated by LPS and of interest to the DiRienzo lab.
+It is highly induced in response to all the bacteria.
+
+```{r CYP27B1}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "CYP27B1"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "CYP27B1")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "CYP27B1"], ]
+```
+
+## TSPAN13
+
+[TSPAN13][] ([ENSG00000106537][]) is an reQTL gene and DE in _Mycobacteria_ at 18 hours post-infection (though this appears to be an example where _Smegmatis_ is not included).
+It is a cell surface protein involved in signal transduction.
+It is not associated with any [disease][omim-TSPAN13].
+
+[TSPAN13]: https://en.wikipedia.org/wiki/TSPAN13
+[ENSG00000106537]: http://useast.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000106537;r=7:16753535-16784536
+[omim-TSPAN13]: http://www.omim.org/entry/613139
+
+```{r TSPAN13}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "TSPAN13"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "TSPAN13")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "TSPAN13"], ]
+```
+
+## CMAS
+
+[CMAS][] ([ENSG00000111726][]) is an reQTL gene and DE in _Mycobacteria_ at 18 hours post-infection.
+It is cytidine monophosphate N-acetylneuraminic acid synthetase.
+It is an enzyme that is involved in processing of sialic acid, which is then added to cell surface glycoproteins and glycolipids.
+It is not associated with any [disease][omim-CMAS].
+
+[CMAS]: https://en.wikipedia.org/wiki/CMAS_(gene)
+[ENSG00000111726]: http://useast.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000111726;r=12:22046174-22065674;t=ENST00000229329
+[omim-CMAS]: http://www.omim.org/entry/603316
+
+```{r CMAS}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "CMAS"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "CMAS")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "CMAS"], ]
+```
+
+## MYOM1
+
+[MYOM1][] ([ENSG00000101605][]) is an reQTL gene and DE (down-regulated) in _Mycobacteria_ at 48 hours post-infection.
+It is myomesin-1.
+It is involved in the structure of the sarcomere.
+It shares some domains with immunoglobulins, so this could be an artifact.
+It is not associated with any [disease][omim-MYOM1].
+
+[MYOM1]: https://en.wikipedia.org/wiki/MYOM1
+[ENSG00000101605]: http://useast.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000101605;r=18:3066807-3220108
+[omim-MYOM1]: http://www.omim.org/entry/603508
+
+```{r MYOM1}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "MYOM1"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "MYOM1")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "MYOM1"], ]
+```
+
+## SLC11A1
+
+[SLC11A1][] ([ENSG00000018280][]) is a gene known to confer [suceptibility to MTB][omim-SLC11A1].
+It is also known as NRAMP1.
+
+[SLC11A1]: https://en.wikipedia.org/wiki/SLC11A1
+[ENSG00000018280]: http://useast.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000018280;r=2:218382029-218396894
+[omim-SLC11A1]: http://omim.org/entry/600266
+
+```{r SLC11A1}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "SLC11A1"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "SLC11A1")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "SLC11A1"], ]
+```
+
+## SP110
+
+[SP110][] ([ENSG00000135899][]) is a gene known to confer [suceptibility to MTB][omim-SP110].
+
+[SP110]: https://en.wikipedia.org/wiki/SP110
+[ENSG00000135899]: http://useast.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000135899;r=2:230167293-230225729
+[omim-SP110]: http://omim.org/entry/604457
+
+```{r SP110}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "SP110"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "SP110")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "SP110"], ]
+```
+
+Interestingly, this seems to be a _M. smegmatis_ specific response gene.
+
+## CISH
+
+[CISH][] ([ENSG00000114737][]) is a gene known to confer [suceptibility to MTB][omim-CISH].
+
+[CISH]: https://en.wikipedia.org/wiki/CISH
+[ENSG00000114737]: http://useast.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000114737;r=3:50606490-50611831
+[omim-CISH]: http://omim.org/entry/602441
+
+```{r CISH}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "CISH"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "CISH")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "CISH"], ]
+```
+
+## TLR2
+
+[TLR2][] ([ENSG00000137462][]) is a gene known to confer [suceptibility to MTB][omim-TLR2].
+
+[TLR2]: https://en.wikipedia.org/wiki/TLR2
+[ENSG00000137462]: http://useast.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000137462;r=4:153701500-153705699;t=ENST00000260010
+[omim-TLR2]: http://omim.org/entry/603028
+
+```{r TLR2}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "TLR2"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "TLR2")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "TLR2"], ]
+```
+
+## IRGM
+
+[IRGM][] ([ENSG00000237693][]) is a gene known to confer [protection against MTB][omim-IRGM].
+It is not expressed in this data set.
+
+[IRGM]: https://en.wikipedia.org/wiki/IRGM
+[ENSG00000237693]: http://useast.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000237693;r=5:150846523-150900736
+[omim-IRGM]: http://omim.org/entry/608212
+
+## IFNGR1
+
+[IFNGR1][] ([ENSG00000027697][]) is a gene known to confer [suceptibility to and protection against MTB][omim-IFNGR1].
+
+[IFNGR1]: https://en.wikipedia.org/wiki/IFNGR1
+[ENSG00000027697]: http://useast.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000027697;r=6:137197484-137219449
+[omim-IFNGR1]: http://omim.org/entry/107470
+
+```{r IFNGR1}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "IFNGR1"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "IFNGR1")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "IFNGR1"], ]
+```
+
+## TIRAP
+
+[TIRAP][] ([ENSG00000150455][]) is a gene known to confer [protection against MTB][omim-TIRAP].
+
+[TIRAP]: https://en.wikipedia.org/wiki/TIRAP
+[ENSG00000150455]: http://useast.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000150455;r=11:126283065-126298845
+[omim-TIRAP]: http://omim.org/entry/606252
+
+```{r TIRAP}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "TIRAP"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "TIRAP")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "TIRAP"], ]
+```
+
+## IFNG
+
+[IFNG][] ([ENSG00000111537][]) is a gene known to confer [protection against MTB][omim-IFNG].
+It is not expressed in this data set.
+
+[IFNG]: https://en.wikipedia.org/wiki/Interferon_gamma
+[ENSG00000111537]: http://useast.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000111537;r=12:68154768-68159747;t=ENST00000229135
+[omim-IFNG]: http://omim.org/entry/147570
+
+## CCL2
+
+[CCL2][] ([ENSG00000108691][]) is a gene known to confer [susceptibility to MTB][omim-CCL2].
+
+[CCL2]: https://en.wikipedia.org/wiki/CCL2
+[ENSG00000108691]: http://useast.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000108691;r=17:34255285-34257203
+[omim-CCL2]: http://omim.org/entry/158105
+
+```{r CCL2}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "CCL2"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "CCL2")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "CCL2"], ]
+```
+
+## CD209
+
+[CD209][] ([ENSG00000090659][]) is a gene known to confer [susceptibility to MTB][omim-CD209].
+It is also known as DC-SIGN.
+
+[CD209]: https://en.wikipedia.org/wiki/CD209
+[ENSG00000090659]: http://useast.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000090659;r=19:7739994-7747564
+[omim-CD209]: http://omim.org/entry/604672
+
+```{r CD209}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "CD209"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "CD209")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "CD209"], ]
+```
+
+## MC3R
+
+[MC3R][] ([ENSG00000124089][]) is a gene known to confer [protection against MTB][omim-MC3R].
+It is not expressed in this data set.
+
+[MC3R]: https://en.wikipedia.org/wiki/MC3R
+[ENSG00000124089]: http://useast.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000124089;r=20:56248732-56249815;t=ENST00000243911
+[omim-MC3R]: http://omim.org/entry/155540
+
+## AHR
+
+[AHR][] ([ENSG00000106546][]) is a ligand-activated transcription factor.
+In phagocytes it is induced by bacterial infection and is anti-inflammatory ([Nguyen et al. 2013][Nguyen2013]).
+It may also regulate susceptibility to infection with MTB ([Moura-Alves et al. 2014][Moura-Alves2014]).
+
+[AHR]: https://en.wikipedia.org/wiki/AHR
+[ENSG00000106546]: http://useast.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000106546;r=7:17298622-17346152
+[Nguyen2013]: http://intimm.oxfordjournals.org/content/25/6/335.long
+[Moura-Alves2014]: http://www.nature.com/nature/journal/v512/n7515/full/nature13684.html#ahr-in-m-tuberculosis-infection
+
+```{r AHR}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "AHR"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "AHR")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "AHR"], ]
+```
+
+```{r}
+stats[stats$time %in% c(18, 48) &
+      stats$gene == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "AHR"],
+      c("test", "logFC", "adj.P.Val")]
+```
+
+## AHRR
+
+[AHRR][] ([ENSG00000063438][]) is the aryl-hydrocarbon receptor repressor.
+It is in _Mycobacteria_-specific module at 48 hours post-infection.
+See above for information on AHR.
+
+[AHRR]: https://en.wikipedia.org/wiki/AHRR
+[ENSG00000063438]: http://useast.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000063438;r=5:304176-438291
+
+```{r AHRR}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "AHRR"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "AHRR")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "AHRR"], ]
+```
+
+```{r}
+stats[stats$time %in% c(18, 48) &
+      stats$gene == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "AHRR"],
+      c("test", "logFC", "adj.P.Val")]
+```
+
+## TNF
+
+[TNF][] ([ENSG00000232810][]) is a pro-inflammatory cytokine.
+
+[TNF]: https://en.wikipedia.org/wiki/Tumor_necrosis_factors
+[ENSG00000232810]: http://useast.ensembl.org/Homo_sapiens/Gene/Summary?g=ENSG00000232810;r=6:31575567-31578336;t=ENST00000449264
+
+```{r TNF}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "TNF"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "TNF")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "TNF"], ]
+```
+
+```{r}
+stats[stats$time %in% c(18, 48) &
+      stats$gene == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "TNF"],
+      c("test", "logFC", "adj.P.Val")]
+```
+
+## CD1C
+
+[CD1C][] ([ENSG00000158481][]) is a antigen-presenting membrane glycoprotein similar to MHC class I molecules (these are the ones on all cells; MHC-II are mainly found on professional antigen-presenting cells).
+Charlie Dulberger from the [Adams lab][Adams] asked me about this molecule after seeing my presentation at retreat.
+From a [review][Adams2013] from Erin Adams: "CD1c has been shown to specifically present lipids from Mycobacterium tuberculosis and other related pathogenic mycobacteria."
+
+[CD1C]: https://en.wikipedia.org/wiki/CD1
+[ENSG00000158481]: http://grch37.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000158481;r=1:158259576-158263420
+[Adams]: http://ejadamslab.bsd.uchicago.edu/Adams_Lab.html
+[Adams2013]: http://www.sciencedirect.com/science/article/pii/S0161589012004336
+
+```{r CD1C}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "CD1C"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "CD1C")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "CD1C"], ]
+```
+
+```{r}
+stats[stats$time %in% c(18, 48) &
+      stats$gene == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "CD1C"],
+      c("test", "logFC", "adj.P.Val")]
+```
+
+## IL15
+
+[Nau et al. 2002][Nau2002] found that MTB induced lower expression of [IL15][] ([ENSG00000164136][]) in macrophages compared to _E. coli_ or _S. aureus_.
+
+My results are consistent with this finding.
+The mycobacteria induce lower expression compared to Yers and Salm at 4 and 18 hours post-infection, and at 48 hours it is in the Yers-Salm pattern.
+
+[IL15]: https://en.wikipedia.org/wiki/CD1
+[ENSG00000164136]: http://grch37.ensembl.org/Homo_sapiens/Gene/Summary?db=core;g=ENSG00000164136;r=4:142557752-142655140
+[Nau2002]: http://www.pnas.org/content/99/3/1503.full
+
+```{r IL15}
+g <- dat_fc[, gene_names$ensembl_gene_id[gene_names$uniprot_genename == "IL15"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+plot_gene %+% dat_temp + labs(title = "IL15")
+```
+
+```{r}
+motifs[motifs$id == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "IL15"], ]
+```
+
+```{r}
+stats[stats$time %in% c(18, 48) &
+      stats$gene == gene_names$ensembl_gene_id[gene_names$uniprot_genename == "IL15"],
+      c("test", "logFC", "adj.P.Val")]
+```
+
+### Figure S8
+
+Compare TNF, IL6, and IL10 in H37Rv and GC1237.
+
+```{r}
+g <- dat_fc[, c(gene_names$ensembl_gene_id[gene_names$uniprot_genename == "TNF"],
+                gene_names$ensembl_gene_id[gene_names$uniprot_genename == "IL6"],
+                gene_names$ensembl_gene_id[gene_names$uniprot_genename == "IL10"])]
+colnames(g) <- c("TNF", "IL6", "IL10")
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+library("reshape2")
+dat_temp_long <- melt(dat_temp, id.vars = c("ind", "bact", "time"), variable.name = "gene",
+                      value.name = "log2FC")
+head(dat_temp_long)
+```
+
+```{r}
+rv_gc_cytokines <- ggplot(dat_temp_long[dat_temp_long$bact %in% c("Rv", "GC"), ],
+                          aes(x = bact, y = log2FC, fill = bact)) +
+  geom_boxplot() +
+  facet_grid(gene ~ time) +
+  theme_bw() +
+  scale_fill_manual(values = my_cols[c(1, 3)]) +
+  theme(legend.position="none",
+        text = element_text(size = 16)) +
+  labs(x = "Bacterial infection", y = expression(paste(log[2], " fold change in expression")))
+rv_gc_cytokines
+```
+
+```{r}
+pdf("../figs/fig-S08-ex-cytokines.pdf", width = 8, height = 7,
+    useDingbats = FALSE)
+rv_gc_cytokines
+dev.off()
+```
+
+
+```{r info}
+sessionInfo()
+```

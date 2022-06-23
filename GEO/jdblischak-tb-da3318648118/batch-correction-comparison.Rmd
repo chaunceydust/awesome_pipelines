@@ -1,0 +1,359 @@
+---
+title: Batch correction
+output:
+  html_document:
+    toc: true
+---
+
+Last updated: `r as.character(Sys.Date())`
+
+Code version: `r system("git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Data version: `r system("git --git-dir=../data/.git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+```{r setup, echo = FALSE}
+source("knitr_options.R")
+opts_chunk$set(message = FALSE)
+```
+
+## Executive summary
+
+*  Simply regressing using the base R function `lm` without protecting the variables of interest is effective.
+*  The function `removeBatchEffect` from the limma package and `ComBat` from the sva package peform very similarly.
+*  `removeBatchEffect` is more flexible than `ComBat` and thus is preferred in situations in which there is more than one batch effect or if a variable to regress is continuous.
+*  The functions `sva` and `svaseq` both failed to capture the clear batch effect present in this data set.
+
+## Introduction
+
+I perform the following methods to remove batch effects and compare their first two principal components.
+
+*  **raw**: No manipulation
+*  **lm**: Simply regress the batch effects using R's `lm` function
+*  **limma**: Use `removeBatchEffect` to regress batch effects while protecting variables of interest.
+*  **combat**: Use `ComBat` in two steps to regress batch effects without protecting variables of interest
+*  **combat_var**: Use `ComBat` in two steps to regress batch effects while protecting variables of interest
+*  **sva**: Use `sva` to regress unspecified batch effects.
+*  **svaseq**: Use `sva` to regress unspecified batch effects from the count data.
+
+## Prepare data
+
+```{r packages}
+library("limma")
+library("edgeR")
+library("sva")
+library("ggplot2")
+theme_set(theme_bw(base_size = 16))
+```
+
+Read in the data of counts (row = sample, column = feature).
+
+```{r data}
+full <- read.table("../data/counts_per_sample.txt", header = TRUE,
+                   stringsAsFactors = FALSE)
+full <- full[order(full$dir), ]
+rownames(full) <- paste(full$dir, full$ind, full$bact, full$time, sep = ".")
+counts <- t(full[, grep("ENSG", colnames(full))])
+# Filter lowly expressed genes
+counts <- counts[rowSums(cpm(counts) > 1) > 6, ]
+```
+
+The first `r sum(!grepl("ENSG", colnames(full)))` columns are meta-data about each sample, and the remaining are the gene counts.
+Only the `r nrow(counts)` genes which have at least one read per million (pre-normalization with TMM) in at least six of the `r nrow(full)` samples are kept.
+
+Convert the meta-data to factors for modeling.
+
+```{r annotation}
+groups <- full[, c("ind", "bact", "time", "extr", "rin")]
+groups$bact <- gsub("\\+", "plus", groups$bact)
+groups$ind <- factor(groups$ind)
+groups$bact <- factor(groups$bact, levels = c("none", "Rv", "Rvplus", "GC",
+                                              "BCG", "Smeg", "Yers", "Salm",
+                                              "Staph"))
+groups$time <- factor(groups$time, levels = c(4, 18, 48))
+groups$extr <- factor(groups$extr)
+head(groups)
+```
+
+Normalize with TMM (`calcNormFactors`).
+
+```{r model}
+y <- DGEList(counts)
+y <- calcNormFactors(y)
+```
+
+Create a matrix of expression values (log~2~ counts per million) for visualizing the data.
+Since `y` is an object of class DGElist, the TMM normalized library sizes are automatically used.
+Also, a prior count of 0.25 is added to avoid taking the log of zero.
+
+```{r log-cpm}
+dat_cpm <- cpm(y, log = TRUE)
+# Remove leading number from sample names. I had given them the unique 
+# identifieers 1-156, which were useful when pre-processing the data but are no 
+# longer needed.
+colnames(dat_cpm) <- sapply(strsplit(colnames(dat_cpm), "\\."),
+                            function(x) {paste(x[2:4], collapse = ".")})
+```
+
+## Functions
+
+```{r pca}
+run_pca <- function(exp_mat) {
+  # Runs principal components analysis.
+  # Input:
+  #  exp_mat: data frame or matrix of expression values.
+  #           Rows are genes and samples are columns.
+
+  # Including some default settings just to be explicit
+  pca <- prcomp(x = t(exp_mat), retx = TRUE, center = TRUE, scale. = TRUE)
+  return(pca)
+}
+```
+
+```{r plot-pca}
+plot_pca <- function(pca, anno, title) {
+  # Plot PC1 vs PC2.
+  # Input:
+  #  pca: result from prcomp
+  #  anno: data frame that contains bact and time columns
+  #  title: string to use as title for plot
+  stopifnot(nrow(pca$x) == nrow(anno))
+  pca_anno <- cbind(anno, pca$x)
+  pca_anno$control <- ifelse(pca_anno$bact == "none", "control", "infection")
+  pca_anno$control <- factor(pca_anno$control, levels = c("control",
+                                                          "infection"))
+  ggplot(pca_anno, mapping = aes(x = PC1, y = PC2,
+                                 col = time, size = control)) +
+    geom_point() +
+    scale_size_discrete(range = c(5, 2)) +
+    scale_color_brewer(palette = "Dark2") +
+    labs(title = title)
+}
+```
+
+## Raw data
+
+PCA of uncorrected log~2~ transformed cpm values:
+
+```{r pca-uncorrected}
+pca_raw <- run_pca(dat_cpm)
+(pca_plot_raw <- plot_pca(pca_raw, groups, title = "PCA: Uncorrected log CPM expression matrix"))
+```
+
+## lm from base R
+
+Remove effect of RIN score and extraction batch.
+
+```{r regress-lm}
+dat_lm <- dat_cpm
+for (i in 1:nrow(dat_lm)) {
+  lm_model <- lm(dat_cpm[i, ] ~ extr + rin, data = groups)
+  resids <- residuals(lm_model)
+  dat_lm[i, ] <- resids + lm_model$coefficients[1] # Add back intercept term
+}
+```
+
+PCA of batch-corrected log~2~ transformed cpm values:
+
+```{r pca-lm}
+pca_lm <- run_pca(dat_lm)
+(pca_plot_lm <- plot_pca(pca_lm, groups,
+                         title = "PCA: Regress with lm"))
+
+```
+
+## removeBatchEffect from limma
+
+Remove effect of RIN score and extraction batch.
+
+```{r regress}
+# Regress out the effect of RIN and extraction batch
+design_base <- model.matrix(~ind + bact*time, data = groups)
+design_base <- design_base[, -ncol(design_base)] # Remove Staph.48
+dat_limma <- removeBatchEffect(x = dat_cpm, batch = groups$extr,
+                               covariates = groups$rin,
+                               design = design_base)
+```
+
+PCA of batch-corrected log~2~ transformed cpm values:
+
+```{r pca-corrected}
+pca_limma <- run_pca(dat_limma)
+(pca_plot_limma <- plot_pca(pca_limma, groups,
+                            title = "PCA: removeBatchEffect"))
+
+```
+
+## ComBat without variable of interest
+
+ComBat is ideal when there is only one categorical variable to correct.
+If you have more than one batch to correct, you either need to combine the factors into one large factor (if the combined factor has at least 3-4 samples per level) or perform ComBat correction multiple times ([source][combat-multiple-batch]).
+It is not possible to correct for a continuous variable.
+
+[combat-multiple-batch]: https://support.bioconductor.org/p/57894/
+
+I convert the RIN score into a categorical variable with 5 levels.
+
+```{r categorical-rin}
+summary(groups$rin)
+groups$rin_cat <- cut(groups$rin, 5)
+summary(groups$rin_cat)
+```
+
+There are not enough samples per level to create a combined factor, so I need to perform ComBat twice.
+
+```{r}
+table(groups$extr, groups$rin_cat)
+```
+
+First I correct for extraction batch, while protecting RIN.
+
+```{r combat-extr}
+modcombat <- model.matrix(~rin_cat, data = groups)
+dat_combat_1 <- ComBat(dat = dat_cpm,
+                     batch = groups[, "extr"],
+                     mod = modcombat,
+                     par.prior = TRUE, prior.plots = FALSE)
+```
+
+Second I correct for RIN.
+
+```{r combat-rin}
+modcombat <- model.matrix(~1, data = groups)
+dat_combat_2 <- ComBat(dat = dat_combat_1,
+                       batch = groups[, "rin_cat"],
+                       mod = modcombat,
+                       par.prior = TRUE, prior.plots = FALSE)
+```
+
+```{r}
+pca_combat <- run_pca(dat_combat_2)
+(pca_plot_combat <- plot_pca(pca_combat, groups,
+                            title = "PCA: ComBat without variable of interest"))
+```
+
+## ComBat with variable of interest
+
+Whether or not to protect the variable(s) of interest when using ComBat is currently a work-in-progress.
+Initially it was advised to include the variable(s) of interest (as reflected in the [ComBat function documentation][combat-doc]).
+However, more recently the advice has been changed to not include the variable(s) of interest (as reflected in the [manual][sva-man]).
+See [here](https://support.bioconductor.org/p/63082/), [here](https://support.bioconductor.org/p/63007/), and [here](https://support.bioconductor.org/p/62874/#62875) for discussions.
+
+[combat-doc]: http://www.rdocumentation.org/packages/sva/functions/ComBat
+[sva-man]: http://www.bioconductor.org/packages/release/bioc/vignettes/sva/inst/doc/sva.pdf
+
+First I correct for extraction batch, while protecting RIN and the variables of interest: individual, bacteria, time,  and bacteria-time interactions.
+
+```{r combat-extr-var-of-interest}
+modcombat <- model.matrix(~rin_cat + ind + bact*time, data = groups)
+modcombat <- modcombat[, -ncol(modcombat)] # Remove Staph.48
+dat_combat_var_1 <- ComBat(dat = dat_cpm,
+                     batch = groups[, "extr"],
+                     mod = modcombat,
+                     par.prior = TRUE, prior.plots = FALSE)
+```
+
+Second I correct for RIN while still protecting variables of interest.
+
+```{r combat-rin-var-of-interest}
+modcombat <- model.matrix(~ind + bact*time, data = groups)
+modcombat <- modcombat[, -ncol(modcombat)] # Remove Staph.48
+dat_combat_var_2 <- ComBat(dat = dat_combat_var_1,
+                       batch = groups[, "rin_cat"],
+                       mod = modcombat,
+                       par.prior = TRUE, prior.plots = FALSE)
+```
+
+```{r}
+pca_combat_var <- run_pca(dat_combat_var_2)
+(pca_plot_combat_var <- plot_pca(pca_combat_var, groups,
+                            title = "PCA: ComBat with variable of interest"))
+```
+
+## sva
+
+Predict the number of surrogate variables.
+
+```{r}
+mod0 <- model.matrix(~1, data = groups)
+(n_sv = num.sv(dat_cpm, design_base, method = "leek"))
+```
+
+Run sva.
+
+```{r sva}
+svobj = sva(dat_cpm, design_base, mod0, n.sv = n_sv)
+```
+
+The result didn't make any sense.
+It just assigned the first sample 1 and all the other samples 0.
+
+```{r}
+table(svobj$sv)
+plot(svobj$sv)
+```
+
+So not surprisingly this doesn't really change anything.
+
+```{r}
+dat_sva <- removeBatchEffect(x = dat_cpm,
+                             covariates = svobj$sv,
+                             design = design_base)
+```
+
+```{r}
+pca_sva <- run_pca(dat_sva)
+(pca_plot_combat_var <- plot_pca(pca_sva, groups,
+                            title = "PCA: sva"))
+```
+
+## svaseq
+
+There is also a method that can be applied directly to the count data.
+It performed just as poorly as the standard `sva` function.
+
+```{r}
+svseqobj = svaseq(counts, design_base, mod0, n.sv = n_sv)
+```
+
+```{r}
+table(svseqobj$sv)
+plot(svseqobj$sv)
+```
+
+## Comparing methods
+
+Compare PC1 and PC2 from all the methods.
+
+```{r}
+results <- data.frame(raw_pc1 = pca_raw$x[, 1],
+                      raw_pc2 = pca_raw$x[, 2],
+                      lm_pc1 = pca_lm$x[, 1],
+                      lm_pc2 = pca_lm$x[, 2],
+                      limma_pc1 = pca_limma$x[, 1],
+                      limma_pc2 = pca_limma$x[, 2],
+                      combat_pc1 = pca_combat$x[, 1],
+                      combat_pc2 = pca_combat$x[, 2],
+                      combat_var_pc1 = pca_combat_var$x[, 1],
+                      combat_var_pc2 = pca_combat_var$x[, 2])
+summary(results)
+```
+
+```{r corr-table, results='asis'}
+kable(cor(results), format = "markdown", digits = 2)
+```
+
+```{r heatmap, fig.height=10}
+library("gplots")
+heatmap.2(as.matrix(results), trace = "none", margins = c(10, 5))
+cor(results$limma_pc1, results$combat_pc1)
+```
+
+The results from all the correction methods are highly correlated.
+The results "limma" and "combat_var" cluster together because they both protect the variables of interest.
+The results "lm" and "combat" cluster together because they both do **not** protect the variables of interest.
+
+## Session information
+
+```{r info}
+sessionInfo()
+```

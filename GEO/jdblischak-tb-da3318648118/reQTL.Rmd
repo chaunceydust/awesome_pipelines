@@ -1,0 +1,211 @@
+Comparison of mean log fold change by eQTL type
+========================================================
+
+Last updated: `r Sys.Date()`
+
+Code version: `r system("git log -1 --format='%H'", intern = TRUE)`
+
+Data version: `r system("git --git-dir=../data/.git log -1 --format='%H'", intern = TRUE)`
+
+Compare absolute value of mean log fold change across bacteria at 18 hours post-infection between genes previously associated with a response eQTL, general eQTL, or no eQTL.
+
+Steps:
+
+*  Compute the mean log fold change per gene across the 8 bacterial infections.
+*  Compute the absolute value of the mean log fold change
+*  Subsample 100 genes from each eQTL category (response, general, non) and compute the mean. Repeat 1000 times.
+*  Plot the distributions of the 1000 subsampled means of absolute mean fold change across the bacterial infections.
+*  Perform t-test.
+
+Generated in this file:
+
+*  Figure 5B - Comparison of mean |log fold change| by eQTL-association
+
+```{r global-chunk-options, echo = FALSE}
+source("knitr_options.R")
+opts_chunk$set(cache = FALSE)
+```
+
+```{r}
+library("ggplot2")
+library("plyr")
+library("reshape2")
+```
+
+```{r}
+set.seed(12345)
+```
+
+Load the differential expression statistics and also the motif labels.
+
+```{r input}
+stats <- read.table("../data/de-stats.txt", header = TRUE,
+                    stringsAsFactors = FALSE)
+head(stats)
+length(unique(stats$gene))
+motifs <- read.table("../data/table-s3.txt", header = TRUE, sep = "\t",
+                     stringsAsFactors = FALSE)
+head(motifs)
+nrow(motifs)
+```
+
+Load the eQTL results.
+Also, need to subset the analysis to only include genes assayed in both this study and the PNAS study.
+
+```{r}
+dc_expr_eqtl <- read.table("../data/dc-expr-eqtl.txt", header = TRUE,
+                           stringsAsFactors = FALSE)
+motifs_eqtl <- merge(motifs, dc_expr_eqtl, by = "id", suffixes = c(".current", ".pnas"))
+# Number of genes whose names have changed in Ensembl database
+nrow(motifs_eqtl[motifs_eqtl$name.current != motifs_eqtl$name.pnas,
+                 c("id", "name.current", "name.pnas")])
+dim(motifs_eqtl)
+table(motifs_eqtl$eqtl_type)
+# Remove gene names and DE stats from PNAS paper
+motifs_eqtl[, c("name.current", "name.pnas", "logFC", "PValue", "FDR")] <- list(NULL)
+head(motifs_eqtl)
+```
+
+After combining the two data sets, there are `r nrow(motifs_eqtl)` genes.
+This includes `r sum(motifs_eqtl$eqtl_type == "response")` of the `r sum(dc_expr_eqtl$eqtl_type == "response")` response eQTL-associated genes and
+`r sum(motifs_eqtl$eqtl_type == "general")` of the `r sum(dc_expr_eqtl$eqtl_type == "general")` response eQTL-associated genes.
+
+Now also need to subset `stats` and add eQTL and motif labels.
+
+```{r}
+s <- merge(stats, motifs_eqtl, by.x = "gene", by.y = "id")
+dim(s)
+```
+
+Ordering factors for proper display in plots.
+
+```{r}
+s$bact <- ordered(s$bact, levels = c("Rv", "Rvplus", "GC", "BCG", "Smeg",
+                                     "Yers", "Salm", "Staph"))
+s$time <- ordered(s$time, levels = c(4, 18, 48))
+s$time_18h <- ordered(s$time_18h, levels = c("Yers-Salm", "non-MTB",
+                                   "MTB", "non-DE", "All"))
+s$eqtl_type <- ordered(s$eqtl_type, levels = c("response", "general", "non"))
+```
+
+```{r}
+ggplot(s, aes(x = eqtl_type, y = abs(logFC))) +
+  geom_boxplot() +
+  facet_grid(time ~ bact)
+```
+
+```{r}
+ggplot(s[s$time == 18, ], aes(x = eqtl_type, y = abs(logFC))) +
+  geom_boxplot() +
+  facet_wrap(~ bact)
+```
+
+## Compare across genes associated with different types of immune response eQTLs
+
+Compute the mean per gene across the 8 bacterial infections:
+
+```{r}
+s_mean <- ddply(s, c("gene", "time", "eqtl_type"), summarize,
+                mean_logFC = mean(logFC))
+stopifnot(length(unique(s$gene)) * 3 == nrow(s_mean),
+          mean(s$logFC[s$gene == "ENSG00000000419" &
+                       s$time == 18]) == 
+          s_mean$mean_logFC[s_mean$gene == "ENSG00000000419" &
+                            s_mean$time == 18])
+dim(s)
+dim(s_mean)
+```
+
+Focus only on 18 hour timepoint:
+
+```{r}
+s_mean_18h <- s_mean[s_mean$time == 18, ]
+nrow(s_mean_18h)
+head(s_mean_18h)
+```
+
+Now take absolute value:
+
+```{r}
+s_mean_18h$abs_mean_logFC <- abs(s_mean_18h$mean_logFC)
+```
+
+Compute the mean of subsamples of 100 genes per category (repeat 1000x):
+
+```{r}
+n_sub <- 100
+n_perm <- 1000
+s_perm <- matrix(nrow = n_perm, ncol = 3,
+                 dimnames = list(NULL, levels(s_mean_18h$eqtl_type)))
+for (i in 1:n_perm) {
+  for (eqtl in levels(s_mean_18h$eqtl_type)) {
+    sub_dat <- sample(s_mean_18h$abs_mean_logFC[s_mean_18h$eqtl_type == eqtl],
+                      n_sub)
+    s_perm[i, eqtl] <- mean(sub_dat)
+  }
+}
+s_perm_long <- melt(s_perm, varnames = c("permutation", "eqtl_type"),
+                    value.name = "mean_abs_mean_logFC")
+head(s_perm_long)
+```
+
+Plot the distributions of the permutations:
+
+```{r}
+reqtl_plot <- ggplot(s_perm_long,
+                       aes(x = mean_abs_mean_logFC, fill = eqtl_type)) +
+  geom_density(alpha = 0.5) +
+  theme_bw() +
+  labs(title = "Comparison of |log fold change| by eQTL type",
+       x = "Mean of subsample of 100 genes of the mean |logFC| across bacterial infections",
+       y = "Density") +
+  scale_fill_manual("eQTL type", values = c("red", "purple", "yellow")) +
+  theme(panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank())
+reqtl_plot
+```
+
+```{r}
+pdf("../figs/fig-05B-eqtl-logFC.pdf", width = 8, height = 5,
+    useDingbats = FALSE)
+reqtl_plot
+dev.off()
+```
+
+Perform t-test:
+
+```{r}
+# Response versus non eQTL genes
+t.test(s_perm_long$mean_abs_mean_logFC[s_perm_long$eqtl_type == "response"],
+       s_perm_long$mean_abs_mean_logFC[s_perm_long$eqtl_type == "non"])
+# General versus non eQTL genes
+t.test(s_perm_long$mean_abs_mean_logFC[s_perm_long$eqtl_type == "general"],
+       s_perm_long$mean_abs_mean_logFC[s_perm_long$eqtl_type == "non"])
+# Response versus general eQTL genes
+t.test(s_perm_long$mean_abs_mean_logFC[s_perm_long$eqtl_type == "response"],
+       s_perm_long$mean_abs_mean_logFC[s_perm_long$eqtl_type == "general"])
+```
+
+## Overlap of reQTL genes and Mycobacteria-specific genes
+
+At 18 hours:
+
+```{r}
+reqtl_18h <- motifs_eqtl$id[motifs_eqtl$time_18h == "MTB" &
+                            motifs_eqtl$eqtl_type == "response"]
+motifs[motifs$id %in% reqtl_18h, ]
+```
+
+at 48 hours:
+
+```{r}
+reqtl_48h <- motifs_eqtl$id[motifs_eqtl$time_48h == "MTB" &
+                            motifs_eqtl$eqtl_type == "response"]
+motifs[motifs$id %in% reqtl_48h, ]
+```
+
+```{r info}
+sessionInfo()
+```

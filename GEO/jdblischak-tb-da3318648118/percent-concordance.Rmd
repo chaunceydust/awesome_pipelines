@@ -1,0 +1,221 @@
+Percent concordance
+========================================================
+
+Last updated: `r as.character(Sys.Date())`
+
+Code version: `r system("git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Data version: `r system("git --git-dir=../data/.git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Cormotif identifies patterns of gene expression across conditions.
+However, it does not take into account the direction of the effect.
+In other words, a gene that is upregulated in one condition and downregulated in another condition will be classified as DE in both conditions.
+In the context of my project, comparing response to infection, it is intuitive to think of the changes always in the same direction.
+In the code below, I check and confirm that this intuitive interpretation is correct.
+
+For a given pattern, e.g. MTB, I check which fraction of the infections are in the same direction.
+Doing this for all genes demonstrated that the situation where a gene is DE across infection, but in a different direction, is rare.
+
+Generated in this file:
+
+*  Table S9 - Percent concordance of directions of DE genes in a pattern
+
+```{r setup, echo = FALSE}
+source("knitr_options.R")
+opts_chunk$set(message = FALSE)
+```
+
+```{r}
+library("plyr")
+library("ggplot2")
+library("gridExtra")
+```
+
+```{r input}
+stats <- read.table("../data/de-stats.txt", header = TRUE,
+                    stringsAsFactors = FALSE)
+head(stats)
+motifs <- read.table("../data/table-s3.txt", header = TRUE, sep = "\t",
+                     stringsAsFactors = FALSE)
+head(motifs)
+stopifnot(length(intersect(stats$gene, motifs$id)) == nrow(motifs))
+```
+
+```{r merge}
+dat <- merge(stats, motifs, by.x = "gene", by.y = "id")
+stopifnot(nrow(dat) == nrow(stats))
+```
+
+```{r}
+motif_list <- list(
+  full_time_course = list(
+    "All" = unique(dat$test),
+    "18 & 48 h" = unique(dat$test[dat$time %in% c(18, 48)]),
+    "48 h" = unique(dat$test[dat$time == 48]),
+    "18 h" = unique(dat$test[dat$time == 18]),
+    "Yers-Salm" = unique(dat$test[dat$bact %in% c("Yers", "Salm")])),
+  time_18h = list(
+    "All" = unique(dat$test[dat$time == 18]),
+    "MTB" = unique(dat$test[dat$time == 18 & dat$bact %in%
+                            c("Rv", "Rvplus", "GC", "BCG", "Smeg")]),
+    "Virulent" = unique(dat$test[dat$time == 18 & dat$bact %in%
+                                 c("Rv", "GC", "Smeg", "Yers", "Salm")]),
+#     "non-MTB" = unique(dat$test[dat$time == 18 & dat$bact %in%
+#                                 c("Smeg", "Yers", "Salm", "Staph")]),
+    "Yers-Salm" = unique(dat$test[dat$time == 18 & dat$bact %in%
+                                  c("Yers", "Salm")])),
+  time_48h = list(
+    "All" = unique(dat$test[dat$time == 48]),
+    "MTB" = unique(dat$test[dat$time == 48 & dat$bact %in%
+                            c("Rv", "Rvplus", "GC", "BCG", "Smeg")]),
+    "Virulent" = unique(dat$test[dat$time == 48 & dat$bact %in%
+                                 c("Rv", "GC", "Smeg", "Yers", "Salm")]),
+    "Yers-Salm" = unique(dat$test[dat$time == 48 & dat$bact %in%
+                                  c("Yers", "Salm")])))
+str(motif_list)
+motif_list[["time_18h"]][["MTB"]]
+```
+
+
+```{r}
+concord_perc <- function(t) {
+  # Returns the percent of t-statistics in the same direction
+  # (thus the minimim possible value is 50%)
+  # t - a vector of t-statistics
+  stopifnot(is.numeric(t), length(t) > 0)
+  p <- max(table(sign(t))) / length(t) * 100
+  stopifnot(all(p >= 50))
+  return(p)
+}
+stopifnot(concord_perc(c(-5, -5, 6, 7)) == 50,
+          concord_perc(c(-5, -5, 0, 0)) == 50,
+          concord_perc(c(-5, -5, 0, -9)) == 75,
+          concord_perc(c(1, 3, 2, 7)) == 100)
+```
+
+```{r}
+concord_perc_per_gene <- function(gene_data, motif_list) {
+  # Returns a 1-row data frame which contains the percent concordance for the 
+  # motif the gene belongs to for each of the analyses.
+  #
+  # gene_data - data frame with all the DE results for a given gene
+  #
+  # motif_list - nested list of tests (e.g. Rv.4) for each motif in each 
+  #              analysis
+  stopifnot("t" %in% colnames(gene_data),
+            length(unique(gene_data$full_time_course)) == 1,
+            length(unique(gene_data$time_18h)) == 1,
+            length(unique(gene_data$time_48h)) == 1)
+  if (gene_data$full_time_course[1] != "non-DE") {
+    full_time_course_concord <- concord_perc(gene_data$t[gene_data$test %in% 
+            motif_list[["full_time_course"]][[gene_data$full_time_course[1]]]])
+  } else {
+    full_time_course_concord <- NA
+  }
+  if (gene_data$time_18h[1] != "non-DE") {
+    time_18h_concord <- concord_perc(gene_data$t[gene_data$test %in% 
+            motif_list[["time_18h"]][[gene_data$time_18h[1]]]])
+  } else {
+    time_18h_concord <- NA
+  }
+  if (gene_data$time_48h[1] != "non-DE") {
+    time_48h_concord <- concord_perc(gene_data$t[gene_data$test %in% 
+            motif_list[["time_48h"]][[gene_data$time_48h[1]]]])
+  } else {
+    time_48h_concord <- NA
+  }
+  out <- data.frame(full_time_course = gene_data$full_time_course[1],
+                    full_time_course_concord,
+                    time_18h = gene_data$time_18h[1],
+                    time_18h_concord,
+                    time_48h = gene_data$time_48h[1],
+                    time_48h_concord,
+                    stringsAsFactors = FALSE)
+  stopifnot(dim(out) == c(1, 6))
+  return(out)
+}
+```
+
+```{r}
+results <- ddply(dat, "gene", concord_perc_per_gene, motif_list = motif_list)
+```
+
+```{r}
+# Order motifs
+results$full_time_course <- factor(results$full_time_course,
+                                   levels = c("non-DE", "All", "18 & 48 h",
+                                              "48 h", "18 h", "Yers-Salm"))
+results$time_18h <- factor(results$time_18h,
+                           levels = c("All", "non-DE", "MTB", "Virulent",
+                                      "Yers-Salm"))
+results$time_48h <- factor(results$time_48h,
+                           levels = c("All", "non-DE", "MTB", "Virulent",
+                                      "Yers-Salm"))
+```
+
+```{r}
+boxplot_full <- ggplot(results[results$full_time_course != "non-DE", ],
+                      aes(x = full_time_course, y = full_time_course_concord)) +
+ geom_boxplot() +
+  geom_point(stat = "summary", fun.y = "mean", col = "red") +
+  labs(x = "Expression pattern", y = "Percent concordance",
+       title = "Full time course") +
+  theme_bw(base_size = 16)
+boxplot_full
+
+boxplot_t18 <- ggplot(results[results$time_18h != "non-DE", ],
+                     aes(x = time_18h, y = time_18h_concord)) +
+  geom_boxplot() +
+  geom_point(stat = "summary", fun.y = "mean", col = "red") +
+  labs(x = "Expression pattern", y = "Percent concordance",
+       title = "18 hours post-infection") +
+  theme_bw(base_size = 16)
+boxplot_t18
+
+boxplot_t48 <- ggplot(results[results$time_48h != "non-DE", ],
+                     aes(x = time_48h, y = time_48h_concord)) +
+  geom_boxplot() +
+  geom_point(stat = "summary", fun.y = "mean", col = "red") +
+  labs(x = "Expression pattern", y = "Percent concordance",
+       title = "48 hours post-infection") +
+  theme_bw(base_size = 16)
+boxplot_t48
+```
+
+Since there are so many genes which are 100% concordant, the boxplot visualization is not very helpful.
+Make a table instead:
+
+```{r}
+concord_table <- NULL
+for (analysis in c("full_time_course", "time_18h", "time_48h")) {
+  for (pattern in levels(results[, analysis])) {
+    if (pattern == "non-DE") {
+      next()
+    }
+#     print(analysis)
+#     print(pattern)
+    concord_col <- paste0(analysis, "_concord")
+    num_concord <- sum(results[results[, analysis] == pattern,
+                               concord_col] == 100)
+    num_discord <- sum(results[results[, analysis] == pattern,
+                               concord_col] != 100)
+    mean_perc_concord <- mean(results[results[, analysis] == pattern,
+                                      concord_col])
+    mean_perc_concord <- round(mean_perc_concord, 2)
+    stopifnot(num_concord + num_discord == 
+                nrow(results[results[, analysis] == pattern, ]))
+    result <- data.frame(analysis, pattern, num_concord, num_discord,
+                         mean_perc_concord, stringsAsFactors = FALSE)
+    concord_table <- rbind(concord_table, result)
+  }
+}
+```
+
+```{r results="asis"}
+kable(concord_table)
+write.table(concord_table, "../data/table-s9.txt", quote = FALSE, sep = "\t", row.names = FALSE)
+```
+
+```{r info}
+sessionInfo()
+```

@@ -1,0 +1,96 @@
+Boxplots for phagosome maturation
+========================================================
+
+Last updated: `r as.character(Sys.Date())`
+
+Code version: `r system("git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Data version: `r system("git --git-dir=../data/.git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Plotting boxplots of genes for phagosome maturation at 18 hours for Figure S4.
+
+```{r}
+library("ggplot2")
+library("reshape2")
+```
+
+Load Table S3 just to get the gene name conversions.
+
+```{r input}
+table_s3 <- read.table("../data/table-s3.txt", header = TRUE, sep = "\t",
+                       stringsAsFactors = FALSE)
+anno <- read.table("../data/annotation.txt", header = TRUE,
+                   stringsAsFactors = FALSE)
+```
+
+```{r}
+gene_conver <- table_s3$id
+names(gene_conver) <- table_s3$name
+```
+
+```{r}
+target_name <- c("RAB22A", "RAP2A", "RAB3A", "RAB33A", "ATP6V1D")
+target_id <- gene_conver[target_name]
+target_time <- 18
+```
+
+Read in log fold changes, where each sample was compared to its time-matched control (the two values were subtracted).
+
+```{r}
+dat_fc <- read.table("../data/fold-change.txt", header = TRUE,
+                     stringsAsFactors = FALSE)
+dat_fc <- dat_fc[dat_fc$time %in% target_time,
+                 c("ind", "bact", "time", target_id)]
+stopifnot(colnames(dat_fc)[4:(3 + length(target_id))] == target_id)
+colnames(dat_fc)[4:(3 + length(target_id))] <- target_name
+head(dat_fc)
+```
+
+```{r}
+dat_fc$bact <- ordered(dat_fc$bact, levels = c("Rv", "Rv+", "GC", "BCG",
+                                               "Smeg", "Yers", "Salm", "Staph"))
+```
+
+```{r}
+library("RColorBrewer")
+my_cols <- brewer.pal(n = 9, name = "Greens")
+my_cols <- c(rev(my_cols)[1:5], "purple", "blue", "orange")
+```
+
+Melt to long form.
+
+```{r}
+dat_fc_long <- melt(dat_fc, id.vars = c("ind", "bact", "time"), variable.name = "gene",
+                    value.name = "log2FC")
+head(dat_fc_long)
+```
+
+Plot.
+
+```{r plot-function}
+phago <- ggplot(dat_fc_long,  aes(x = bact, y = log2FC, fill = bact)) +
+  geom_boxplot(lwd = 1) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  facet_wrap(~gene, nrow = 4, scales = "free") +
+  labs(x = "Bacterial infection",
+       y = expression(paste(log[2], " fold change"))) +
+  theme_bw(base_size = 12) +
+  theme(plot.title = element_text(size = rel(1.25)),
+        line = element_line(size = 1), rect = element_rect(size = 1),
+        legend.position="none",
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1)) +
+  scale_fill_manual(values = my_cols)
+phago
+```
+
+```{r}
+pdf("../figs/fig-S04-phago.pdf", width = 8, height = 7,
+    useDingbats = FALSE)
+phago
+dev.off()
+```
+
+
+```{r info}
+sessionInfo()
+```

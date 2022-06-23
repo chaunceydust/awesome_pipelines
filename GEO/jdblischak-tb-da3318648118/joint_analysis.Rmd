@@ -1,0 +1,687 @@
+Joint Bayesian analysis with Cormotif
+========================================================
+
+John Blischak
+
+Last updated: `r as.character(Sys.Date())`
+
+Code version: `r system("git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Data version: `r system("git --git-dir=../data/.git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Perform joint analysis with Cormotif.
+
+Generated in this file:
+
+*  Figures 2A, 3A, 4A - Cormotif results
+*  Figure 5A - Distribution of response eQTLs across expression patterns
+*  Table S3 - Gene expression patterns (motifs)
+*  Table S4 - Gene expression patterns (motifs) split into Excel sheets
+*  Table S5 - GO analysis results
+
+```{r global-chunk-options, echo = FALSE}
+source("knitr_options.R")
+opts_chunk$set(fig.width = 12, fig.height = 8, cache = FALSE)
+```
+
+The Cormotif source code was edited so that the assignment of genes to each expression pattern (termed cluster likelihoods) are returned.
+
+```{r libraries, message = FALSE}
+source("cormotif.R") # my fork of Cormotif v 1.9.2
+library("ggplot2")
+library("reshape2")
+library("plyr")
+library("biomaRt")
+library("XLConnect")
+```
+
+```{r input-counts}
+dat_cpm <- read.table("../data/table-s1.txt", header = TRUE, sep = "\t",
+                      stringsAsFactors = FALSE)
+# The first two columns are gene information
+rownames(dat_cpm) <- dat_cpm$id
+gene_names <- dat_cpm$name
+names(gene_names) <- dat_cpm$id
+dat_cpm[, c("id", "name")] <- list(NULL)
+dat_cpm <- as.matrix(dat_cpm)
+```
+
+```{r input-metadata}
+anno <- read.table("../data/annotation.txt", header = TRUE,
+                   stringsAsFactors = FALSE)
+# Order the bacteria
+anno$bact <- ordered(anno$bact, levels = c("none", "Rv", "Rv+", "GC", "BCG",
+                                           "Smeg", "Yers", "Salm", "Staph"))
+anno$time <- factor(anno$time, levels = c(4, 18, 48))
+```
+
+```{r eqtls}
+dc_expr_eqtl <- read.table("../data/dc-expr-eqtl.txt", header = TRUE,
+                           stringsAsFactors = FALSE)
+mac_expr_eqtl <- merge(dc_expr_eqtl, dat_cpm, by.x = "id", by.y = "row.names")
+stopifnot(nrow(mac_expr_eqtl) > 0)
+reqtl <- mac_expr_eqtl$id[mac_expr_eqtl$eqtl_type == "response"]
+geqtl <- mac_expr_eqtl$id[mac_expr_eqtl$eqtl_type == "general"]
+```
+
+## Run Cormotif
+
+Cormotif is a stochastic method.
+To find the optimum result, each analysis is run 100 times (`batch_submit_cormotif.sh` submits `run_cormotif.R` 100 times, each time with a different seed).
+Then `bestmotif.R` is ran to identify the model with the highest log likelihood and the seed that generated the result.
+These seeds are used below to run Cormotif.
+
+Prepare `groupid`
+
+```{r}
+# Create a factor for the experiments, with the levels ordered such that
+# as.numeric converts them to numbers in a defined manner
+group_fac <- factor(paste(anno$bact, anno$time, sep = "."),
+                    levels = c("none.4", "Rv.4", "Rv+.4", "GC.4", "BCG.4",
+                               "Smeg.4", "Yers.4", "Salm.4", "Staph.4", "none.18",
+                               "Rv.18", "Rv+.18", "GC.18", "BCG.18", "Smeg.18",
+                               "Yers.18", "Salm.18", "Staph.18", "none.48",
+                               "Rv.48", "Rv+.48", "GC.48", "BCG.48", "Smeg.48",
+                               "Yers.48", "Salm.48"))
+groupid <- as.numeric(group_fac)
+```
+
+Prepare `compid`
+
+```{r}
+compid <- data.frame(Cond1 = rep(c(1, 10, 19), each = 8),
+                     Cond2 = c(2:9, 11:18, 20:27))
+compid <- compid[-24, ] # Remove last row b/c no 48 hr Staph sample
+```
+
+All timepoints
+
+```{r plotIC-all}
+if (file.exists("../data/plot-ic-all.rds")) {
+  all_k <- readRDS("../data/plot-ic-all.rds")
+} else {
+  set.seed(12345)
+  all_k <- cormotiffit(exprs = dat_cpm, groupid = groupid, compid = compid,
+                       K = 5:15, max.iter = 500)
+  saveRDS(all_k, "../data/plot-ic-all.rds")
+}
+plotIC(all_k)
+pdf("../figs/fig-S03A-plot-ic.pdf", width = 8.5, height = 5,
+    useDingbats = FALSE)
+plotIC(all_k)
+dev.off()
+```
+
+K = 14
+
+```{r}
+set.seed(67)
+all_k14 <- cormotiffit(exprs = dat_cpm, groupid = groupid, compid = compid,
+                      K = 14, max.iter = 500)
+```
+
+K = 6
+
+```{r}
+set.seed(45)
+all_k6 <- cormotiffit(exprs = dat_cpm, groupid = groupid, compid = compid,
+                      K = 6, max.iter = 500)
+```
+
+18 hour timepoint
+
+```{r}
+set.seed(49)
+t18_k5 <- cormotiffit(exprs = dat_cpm, groupid = groupid,
+                      compid = compid[9:16, ], K = 5, max.iter = 500)
+```
+
+48 hour timepoint
+
+```{r}
+set.seed(54)
+t48_k5 <- cormotiffit(exprs = dat_cpm, groupid = groupid,
+                      compid = compid[17:23, ], K = 5, max.iter = 500)
+```
+
+## Analyze Cormotif
+
+The following functions organize the Cormotif results (e.g. add gene names, assign each gene to a motif/pattern based on the returned cluster likelihoods) and plot the results using this organized data.
+Most importantly, the function `plotMotif` is edited so that instead of returning an estimate of the number of genes in each motif (the motif prior times the total number of genes), it returns the actual number of genes in motif as determined by the cluster likelihoods.
+Lastly, the GO categories enriched in each motif are determined with the package topGO.
+
+```{r functions-to-analyze-cormotif-results}
+organize_cormotif_result <- function(x, gene_names, motif_order = NULL,
+                                     motif_labels = NULL) {
+  # Updates Cormotif result for further analysis:
+  # 1) Adds gene names
+  # 2) Adds new list component, motif, which contains the assigned motif for
+  #    each gene
+  # 3) Optionally rearranges motifs and/or adds labels
+  
+  # Parameters:
+  # x - output from Cormotif
+  # gene_names - character vector of gene names
+  # motif_order - new order of motifs
+  # motif_labels - names for motifs. If motif_order is specified, labels are
+  #                applied sequentially to this new order
+  
+  # Add gene names to posterior probability matrix and cluster likelihood
+  # matrix.
+  if (is.character(gene_names) & 
+      length(gene_names) == nrow(x$bestmotif$p.post)) {
+      rownames(x$bestmotif$p.post) <- gene_names
+      rownames(x$bestmotif$clustlike) <- gene_names
+  } else {
+    stop("gene_names must be a character vector with length equal to the
+         number of genes in the analysis.")
+  }
+  # Reorder motifs
+  if (!is.null(motif_order)) {
+    if (is.numeric(motif_order) &
+        length(motif_order) == length(x$bestmotif$motif.prior)) {
+      x$bestmotif$motif.prior <- x$bestmotif$motif.prior[motif_order]
+      x$bestmotif$motif.q <- x$bestmotif$motif.q[motif_order, ]
+      x$bestmotif$clustlike <- x$bestmotif$clustlike[, motif_order]
+    } else {
+      stop("motif_order must be numeric vector with length equal to number
+           of motifs.")
+    }
+  }
+  # Assign motifs to each gene
+  motif <- apply(x$bestmotif$clustlike, 1, which.max)
+  motif <- factor(motif)
+  # Add motif labels
+  if (!is.null(motif_labels)) {
+    if (is.character(motif_labels) &
+        length(motif_labels) == length(x$bestmotif$motif.prior)) {
+      levels(motif) <- motif_labels
+      motif <- ordered(motif, levels = motif_labels)
+    } else {
+      stop("motif_labels must be character vector with length equal to number
+           of motifs.")
+    }
+  }
+  x[["motif"]] <- motif
+  return(x)
+}
+```
+
+```{r plotMotif-custom}
+plotMotif_custom <- function(fitted_cormotif, title="", study_labels = NULL,
+                             motif_order = NULL, motif_labels = NULL,
+                             pattern_xlab = "Study",
+                             pattern_ylab = "Corr. Motifs",
+                             pattern_title = "pattern",
+                             freq_xlab = "",
+                             freq_ylab = "No. of genes",
+                             freq_title = "frequency",
+                             extra_gene_list = NULL,
+                             extra_xlab = "No. of genes",
+                             extra_title = "frequency")
+{
+  # I modified the basic output of the function `plotMotif` by adding the
+  # following features:
+  #   + Specify the order the motifs
+  #   + Label columns and rows
+  #   + Customize axis titles
+  #   + Give the actual number of genes per category, not the estimate from the
+  #     prior probability multiplied by the total number of genes
+  #   + Add additional gene counts for other lists of genes
+  if (!is.null(motif_order)) {
+    # Rearrange motif order
+    fitted_cormotif$bestmotif$motif.prior <-
+      fitted_cormotif$bestmotif$motif.prior[motif_order]
+    fitted_cormotif$bestmotif$motif.q <- 
+      fitted_cormotif$bestmotif$motif.q[motif_order, ]
+    fitted_cormotif$bestmotif$clustlike <-
+      fitted_cormotif$bestmotif$clustlike[, motif_order]
+  }
+  if (is.null(extra_gene_list)) {
+    layout(matrix(1:2,ncol=2), widths = c(0.75, 0.25))  
+  } else {
+    layout(matrix(1:3,ncol=3), widths = c(0.5, 0.25, 0.25))
+  }
+  u<-1:dim(fitted_cormotif$bestmotif$motif.q)[2]
+  v<-1:dim(fitted_cormotif$bestmotif$motif.q)[1]
+  op <- par("mar" = c(10, 10, 1, 0) + 0.1, "mgp" = c(8, 1, 0))
+  image(u,v,t(fitted_cormotif$bestmotif$motif.q),
+        col=gray(seq(from=1,to=0,by=-0.1)),xlab=pattern_xlab,
+        xaxt = "n", yaxt = "n",
+        ylab=pattern_ylab,main=pattern_title, cex.main = 2.5, cex.lab = 2)
+  if (!is.null(study_labels)) {
+    axis(1, at = 1:length(u), labels = study_labels, las = 2, cex.axis = 1.5)
+  } else {
+    axis(1, at = 1:length(u))
+  }
+  if (!is.null(motif_labels)) {
+    axis(2,at=1:length(v), labels = motif_labels, las = 2, tick = FALSE,
+         cex.axis = 1.5)
+  } else {
+    axis(2,at=1:length(v), cex.axis = 2)
+  }
+  for(i in 1:(length(u)+1))
+  {
+    abline(v=(i-0.5))
+  }
+  for(i in 1:(length(v)+1)) 
+  {
+    abline(h=(i-0.5))
+  }
+  par(op)
+  cluster_membership <- apply(fitted_cormotif$bestmotif$clustlike, 1, which.max)
+  genecount = table(cluster_membership)
+  NK=nrow(fitted_cormotif$bestmotif$motif.q)
+  op <- par("mar" = c(10, 0, 1, 0) + 0.1)
+  frequency_plot(genecount, NK, title = freq_title, xlab = freq_xlab)
+  if (!is.null(extra_gene_list)) {
+    num_in_motif <- table(cluster_membership[extra_gene_list])
+    frequency_plot(num_in_motif, NK, title = extra_title, xlab = extra_xlab)
+  }
+  par(op)
+  par("mfrow" = c(1, 1))
+}
+```
+
+```{r freq-function}
+frequency_plot <- function(genecount, NK, title = "frequency",
+                           xlab = "", ylab = "No. of genes") {
+  # If there are no counts in a group, add a zero
+  if (length(genecount) < NK) {
+    for (i in as.character(1:NK)) {
+     if (is.na(genecount[i])) {
+       genecount[i] <- 0
+     }
+    }
+    genecount <- genecount[order(names(genecount))]
+  }
+  plot(0,0.7,pch=".",xlim=c(0,1.2),ylim=c(0.75,NK+0.25),
+       frame.plot=FALSE,axes=FALSE,xlab=xlab,ylab="", main=title, cex.main = 2,
+       cex.lab = 2.25)
+#   segments(0,0.7,genecount[1]/sum(genecount),0.7)
+#   rect(0,1:NK-0.3,genecount/sum(genecount),1:NK+0.3,
+#        col="dark grey")
+# #   mtext(1:NK,at=1:NK,side=2,cex=0.8)
+#   text(genecount/sum(genecount)+0.15,1:NK,
+#        labels=genecount, cex = 2)
+  text(0.25, 1:NK, labels = genecount, cex = 2)
+  text(0.75, NK/2, labels = ylab, srt = 90, cex = 2)
+}
+```
+
+```{r go-function}
+go_analysis <- function(motif, output = NULL) {
+  # Performs GO analysis with topGO
+  #
+  # Params:
+  # motif - factor with genes as names attribute
+  # output - name of RDS file to save results
+  library("topGO")
+  go_results <- list()
+  for (m in levels(motif)) {
+    gene_universe <- ifelse(motif == m, 1, 0)
+    gene_universe <- factor(gene_universe)
+    names(gene_universe) <- names(motif)
+    go_data <- new("topGOdata",
+                   ontology = "BP",
+                   allGenes = gene_universe,
+                   nodeSize = 5,
+                   annotationFun = annFUN.org,
+                   mapping = "org.Hs.eg",
+                   ID = "ensembl")
+    go_test <- runTest(go_data, algorithm = "weight01", statistic = "fisher")
+    go_table <- GenTable(go_data, weightFisher = go_test,
+                         orderBy = "weightFisher", ranksOf = "weightFisher",
+                         topNodes = sum(score(go_test) < .01))
+    go_results[[m]] <- go_table
+  }
+  # For determining which genes are in a GO category, use the following:
+  # go_genes <- genesInTerm(go_data, go_id)[[1]]
+  if (!is.null(output)) {
+    saveRDS(go_results, file = output)
+  }
+  return(go_results)
+}
+```
+
+### Full time course
+
+K = 14
+
+```{r all-k14}
+all_k14_organized <- organize_cormotif_result(all_k14,
+                gene_names = rownames(dat_cpm),
+                motif_order = c(1, 2, 14, 3, 4, 12, 9, 10, 13, 5, 6, 8, 11, 7),
+                motif_labels = c("non-DE", # 1
+                                 "Yers-Salm-4h", # 2
+                                 "Yers-Salm-18h", # 14
+                                 "4h", # 3
+                                 "non-MTB", # 4
+                                 "Virulent-18h", # 12
+                                 "Virulent-18h+Yers-Salm-4h", # 9
+                                 "18h+Yers-Salm-48h", # 10
+                                 "48h", # 13
+                                 "48h+Yers-Salm-4h", # 5
+                                 "4&18h", # 6
+                                 "18&48h", # 8
+                                 "18&48h+Yers-Salm-4h", # 11
+                                 "All" # 7
+                                 ))
+table(all_k14_organized$motif)
+infections <- factor(paste(anno$bact, anno$time, sep = "."))
+levels(infections) <- list(none.4 = 1, Rv.4 = 2, "Rv+.4" = 3, GC.4 = 4,
+                           BCG.4 = 5, Smeg.4 = 6, Yers.4 = 7, Salm.4 = 8,
+                           Staph.4 = 9, none.18 = 10, Rv.18 = 11,
+                           "Rv+.18" = 12, GC.18 = 13, BCG.18 = 14,
+                           Smeg.18 = 15, Yers.18 = 16, Salm.18 = 17,
+                           Staph.18 = 18, none.48 = 19, Rv.48 = 20,
+                           "Rv+.48" = 21, GC.48 = 22, BCG.48 = 23,
+                           Smeg.48 = 24, Yers.48 = 25, Salm.48 = 26)
+study_labels <- levels(infections)[grep("none", levels(infections),
+                                        invert = TRUE)]
+# png("../figs/fig-S03B-joint-all-k14.png", width = 830, height = 456)
+pdf("../figs/fig-S03B-joint-all-k14.pdf", width = 10, height = 7,
+    useDingbats = FALSE)
+plotMotif_custom(all_k14_organized,
+                 study_labels = study_labels,
+                 motif_labels = 1:14, #levels(all_k14_organized$motif),
+                 pattern_xlab = "Bacterial infection",
+                 pattern_ylab = "Expression pattern",
+                 pattern_title = "",
+                 freq_ylab = "Number of genes",
+                 freq_xlab = "",
+                 freq_title = "")
+dev.off()
+```
+
+K = 6
+
+```{r all-k6}
+all_k6_organized <- organize_cormotif_result(all_k6,
+                gene_names = rownames(dat_cpm),
+                motif_order = c(5, 6, 3, 2, 4, 1),
+                motif_labels = c("Yers-Salm", "18 h",
+                                 "48 h", "18 & 48 h", "All", "non-DE"))
+table(all_k6_organized$motif)
+# png("../figs/fig-02A-joint-all.png", width = 830, height = 456)
+pdf("../figs/fig-02A-joint-all.pdf", width = 10, height = 7,
+    useDingbats = FALSE)
+plotMotif_custom(all_k6_organized,
+                 study_labels = study_labels,
+                 motif_labels = levels(all_k6_organized$motif),
+                 pattern_xlab = "Bacterial infection",
+                 pattern_ylab = "Expression pattern",
+                 pattern_title = "",
+                 freq_ylab = "Number of genes",
+                 freq_xlab = "",
+                 freq_title = "")
+dev.off()
+if (file.exists("../data/go_results_all-k6.rds")) {
+  go_all_k6 <- readRDS("../data/go_results_all-k6.rds")  
+} else {
+  go_results <- go_analysis(all_k6_organized[["motif"]],
+                            output = "../data/go_results_all-k6.rds")
+}
+search <- function(df, query) {
+  grep(query, df$Term, value = TRUE)
+}
+lapply(go_all_k6, search, query = "ant")
+names(go_all_k6)
+go_all_k6[["All"]][, c("Term", "Annotated", "Significant")]
+```
+
+### 18 hours post-infection
+
+```{r 18-k5}
+t18_k5_organized <- organize_cormotif_result(t18_k5,
+                gene_names = rownames(dat_cpm), motif_order = c(3, 2, 5, 1, 4),
+                motif_labels = c("Yers-Salm", "Virulent", "MTB",
+                                 "non-DE", "All"))
+table(t18_k5_organized$motif)
+study_labels_18 <- study_labels[grep("18", study_labels)]
+# png("../figs/fig-03A-joint-18h.png", width = 830, height = 456)
+pdf("../figs/fig-03A-joint-18h.pdf", width = 10, height = 7,
+    useDingbats = FALSE)
+plotMotif_custom(t18_k5_organized,
+                 study_labels = study_labels_18,
+                 motif_labels = levels(t18_k5_organized$motif),
+                 pattern_xlab = "Bacterial infection",
+                 pattern_ylab = "Expression pattern",
+                 pattern_title = "",
+                 freq_ylab = "Number of genes",
+                 freq_title = "",
+                 freq_xlab = "")
+dev.off()
+if (file.exists("../data/go_results_18-k5.rds")) {
+  go_18_k5 <- readRDS("../data/go_results_18-k5.rds")  
+} else {
+  go_results <- go_analysis(t18_k5_organized[["motif"]],
+                            output = "../data/go_results_18-k5.rds")
+}
+lapply(go_18_k5, search, query = "anti")
+names(go_18_k5)
+go_18_k5[["Yers-Salm"]][, c("Term", "Annotated", "Significant")]
+```
+
+### 48 hours post-infection
+
+```{r 48-k5}
+t48_k5_organized <- organize_cormotif_result(t48_k5,
+                gene_names = rownames(dat_cpm), motif_order = c(5, 3, 4, 1, 2),
+                motif_labels = c("Yers-Salm", "Virulent", "MTB",
+                                 "non-DE", "All"))
+study_labels_48 <- study_labels[grep("48", study_labels)]
+# png("../figs/fig-04A-joint-48h.png", width = 830, height = 456)
+pdf("../figs/fig-04A-joint-48h.pdf", width = 10, height = 7,
+    useDingbats = FALSE)
+plotMotif_custom(t48_k5_organized,
+                 study_labels = study_labels_48,
+                 motif_labels = levels(t48_k5_organized$motif),
+                 pattern_xlab = "Bacterial infection",
+                 pattern_ylab = "Expression pattern",
+                 pattern_title = "",
+                 freq_ylab = "Number of genes",
+                 freq_title = "",
+                 freq_xlab = "")
+dev.off()
+if (file.exists("../data/go_results_48-k5.rds")) {
+  go_48_k5 <- readRDS("../data/go_results_48-k5.rds")  
+} else {
+  go_results <- go_analysis(t48_k5_organized[["motif"]],
+                            output = "../data/go_results_48-k5.rds")
+}
+lapply(go_48_k5, search, query = "apop")
+names(go_48_k5)
+go_48_k5[["Virulent"]][, c("Term", "Annotated", "Significant")]
+```
+
+Determine the overlap in similar motifs between the 18 and 48 hour timepoints.
+
+```{r overlap-betw-18-and-48}
+find_overlap <- function(motif1, motif2) {
+  shared <- length(intersect(motif1, motif2))
+  total <- length(union(motif1, motif2))
+  paste("shared:", shared, "total:", total, "frac", shared / total)
+}
+# All
+find_overlap(names(t18_k5_organized$motif)[t18_k5_organized$motif == "All"],
+             names(t48_k5_organized$motif)[t48_k5_organized$motif == "All"])
+# non-DE
+find_overlap(names(t18_k5_organized$motif)[t18_k5_organized$motif == "non-DE"],
+             names(t48_k5_organized$motif)[t48_k5_organized$motif == "non-DE"])
+# MTB
+find_overlap(names(t18_k5_organized$motif)[t18_k5_organized$motif == "MTB"],
+             names(t48_k5_organized$motif)[t48_k5_organized$motif == "MTB"])
+# non-MTB and virulent
+find_overlap(names(t18_k5_organized$motif)[t18_k5_organized$motif == "Virulent"],
+             names(t48_k5_organized$motif)[t48_k5_organized$motif == "Virulent"])
+# Yers-Salm
+find_overlap(names(t18_k5_organized$motif)[t18_k5_organized$motif == "Yers-Salm"],
+             names(t48_k5_organized$motif)[t48_k5_organized$motif == "Yers-Salm"])
+```
+
+### Gradient legend
+
+To facilitate reading of the figure, create gradient legend that explains the shades of grey (add via Illustrator).
+
+```{r gradient}
+gradient <- seq(from=1,to=0,by=-0.1)
+pdf("../figs/gradient.pdf", width = 8.5, height = 4, useDingbats = FALSE)
+par("mar" = c(5, 1, 1, 1), "cex" = 3, "plt" = c(.1, .95, .6, .99))
+image(z = as.matrix(gradient),
+      col = rev(gray(gradient)),
+      xlab = "Probability of differential expression",
+      yaxt = "n")
+dev.off()
+```
+
+### Figure 5A
+
+Determine the distribution of response eQTLs across the expression patterns identified at 18 hours post-infection.
+
+```{r reQTL-distribution}
+num_in_motif <- table(t18_k5_organized$motif[reqtl])
+num_in_motif_df <- melt(num_in_motif, varnames = "pattern",
+                        value.name = "reQTL")
+# png("../figs/fig-05A-response-eqtl.png", width = 830, height = 456)
+pdf("../figs/fig-05A-response-eqtl.pdf", width = 8, height = 5,
+    useDingbats = FALSE)
+ggplot(num_in_motif_df, aes(x = pattern, y = reQTL)) +
+  geom_bar(stat = "identity") + theme_bw(base_size = 16) +
+  labs(title = "Distribution of response eQTLs at 18 hours post-infection",
+       y = "Number of response eQTLs", x = "Expression Pattern") +
+  theme(panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank())
+dev.off()
+# png("fig-04-response-eqtl-presentation.png", width = 830, height = 456)
+# ggplot(num_in_motif_df, aes(x = pattern, y = reQTL)) +
+#   geom_bar(stat = "identity") + theme_bw(base_size = 32) +
+#   labs(x = "Expression pattern", y = "Number of genes")
+# dev.off()
+```
+
+Is there an enrichment of reQTLs among the genes DE after any bacterial infection at 18 hours post-infection?
+
+```{r reQTL-enrichment-all-v-none}
+any_de_t18 <- t18_k5_organized$motif != "non-DE"
+is_reqtl_t18 <- names(t18_k5_organized$motif) %in% reqtl
+stopifnot(length(any_de_t18) == length(is_reqtl_t18))
+# Subset to those genes that are shared between the two studies
+shared_genes <- names(t18_k5_organized$motif) %in% mac_expr_eqtl$id
+any_de_t18 <- any_de_t18[shared_genes]
+is_reqtl_t18 <- is_reqtl_t18[shared_genes]
+stopifnot(sum(shared_genes) == length(any_de_t18),
+          sum(shared_genes) == length(is_reqtl_t18))
+table(any_de_t18, is_reqtl_t18)
+chisq.test(any_de_t18, is_reqtl_t18)
+```
+
+No.
+
+### Table S3
+
+Table S3 contains the motif assignments for each of the genes.
+
+```{r}
+supp_table_motifs <- data.frame(id = names(all_k6_organized$motif),
+                                name = gene_names,
+                                full_time_course = all_k6_organized$motif,
+                                time_18h = t18_k5_organized$motif,
+                                time_48h = t48_k5_organized$motif)
+stopifnot(all(names(all_k6_organized$motif) == names(t18_k5_organized$motif)),
+          all(names(all_k6_organized$motif) == names(t48_k5_organized$motif)),
+          all(names(all_k6_organized$motif) == supp_table_motifs$id),
+          all(names(gene_names) == supp_table_motifs$id))
+head(supp_table_motifs)
+write.table(supp_table_motifs, file = "../data/table-s3.txt",
+            quote = FALSE, sep = "\t", row.names = FALSE)
+```
+
+## Table S4
+
+The above table is useful for programmatic access via R.
+However, another way to explore the data would have the lists of genes separated by each motif in each analysis, similar to the GO output below.
+Furthermore, to aid in the interpretation, I am adding the description of each gene to the file.
+
+```{r setup-biomaRt}
+ensembl <- useMart(host = "sep2013.archive.ensembl.org",
+                   biomart = "ENSEMBL_MART_ENSEMBL",
+                   dataset = "hsapiens_gene_ensembl")
+# attributePages(ensembl)
+# atts <- listAttributes(ensembl, page = "feature_page")
+# atts[grep("escription", atts$description), ]
+```
+
+Download the Ensembl gene descriptions.
+
+```{r get-ens-descriptions}
+ens_des <- getBM(attributes = c("ensembl_gene_id", "description"),
+                 filters = "ensembl_gene_id",
+                 values = supp_table_motifs$id,
+                 mart = ensembl)
+stopifnot(supp_table_motifs$id == ens_des$ensembl_gene_id)
+supp_table_motifs$description <- ens_des$description
+```
+
+Create Excel workbork, where each sheet contains the genes for a particular motif from a particular analysis.
+
+```{r motifs-in-excel}
+if (file.exists("../data/table-s4.xls")) {
+  unlink("../data/table-s4.xls")
+}
+table_s4 <- loadWorkbook("../data/table-s4.xls", create = TRUE)
+setStyleAction(table_s4, XLC$STYLE_ACTION.NONE)
+# Correspondence between column name and figure number used for labeling sheet
+fig_num_per_analysis <- paste0("Fig", 2:4)
+names(fig_num_per_analysis) <- c("full_time_course", "time_18h", "time_48h")
+for (analysis_name in names(fig_num_per_analysis)) {
+  fig_num <- fig_num_per_analysis[analysis_name]
+  for (pattern_name in unique(supp_table_motifs[, analysis_name])) {
+    out <- supp_table_motifs[supp_table_motifs[, analysis_name] == pattern_name,
+                             c("id", "name", "description")]
+    # Order by gene name
+    out <- out[order(out$name), ]
+    sheet_name <- paste(fig_num, pattern_name)
+    createSheet(table_s4, name = sheet_name)
+    writeWorksheet(table_s4, out, sheet = sheet_name)
+  }
+}
+saveWorkbook(table_s4)
+```
+
+### Table S5
+
+Table S5 contains the GO analysis results for each of the patterns in each of the three analyses.
+These text files are collated into tabs of an Excel file.
+
+```{r output-go-as-table}
+all_go_list <- list(go_all_k6 = go_all_k6, go_18_k5 = go_18_k5,
+                    go_48_k5 = go_48_k5)
+if (file.exists("../data/table-s5.xls")) {
+  unlink("../data/table-s5.xls")
+}
+table_s5 <- loadWorkbook("../data/table-s5.xls", create = TRUE)
+setStyleAction(table_s5, XLC$STYLE_ACTION.NONE)
+for (i in seq_along(all_go_list)) {
+  analysis_name <- names(all_go_list)[i]
+  for (j in seq_along(all_go_list[[i]])) {
+    pattern_name <- names(all_go_list[[i]])[j]
+    analysis_name <- gsub("_", "-", analysis_name)
+    fname <- paste0("../data/", analysis_name, "-", pattern_name, ".txt")
+    # print(fname)
+    write.table(all_go_list[[i]][[j]], file = fname, quote = FALSE, sep = "\t",
+                row.names = FALSE)
+    # Use the name of the Figure for labeling the Excel sheets
+    sheet_name <- paste(paste0("Fig", i + 1), pattern_name)
+    createSheet(table_s5, name = sheet_name)
+    writeWorksheet(table_s5, all_go_list[[i]][[j]], sheet = sheet_name)
+  }
+}
+saveWorkbook(table_s5)
+```
+
+```{r info}
+sessionInfo()
+```

@@ -1,0 +1,239 @@
+Genotyping and allele-specific expression
+========================================================
+
+Last updated: `r as.character(Sys.Date())`
+
+Code version: `r system("git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Data version: `r system("git --git-dir=../data/.git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+```{r setup, echo = FALSE}
+source("knitr_options.R")
+opts_chunk$set(message = FALSE)
+```
+
+JC Grenier, a bioinformatician in Luis's lab, ran the RNA-seq data through his GATK-based genotyping pipeline.
+
+## Relatedness
+
+First, I wanted to confirm that the individuals were correctly identified.
+To do this I ran `vcftools` with the `--relatedness` option.
+
+```
+vcftools --gzvcf ../data/John_Blischak_Project.hg19.20022015.STAR.q1.VQ30.GQ20.cov10.noMiss1.noMAF0.vcf.gz --relatedness
+```
+
+Here is the description of the results from the `vcftools` [manual][man].
+
+> This option is used to calculate and output a relatedness statistic based on the method of Yang et al, Nature Genetics 2010 (doi:10.1038/ng.608). Specifically, calculate the unadjusted Ajk statistic. Expectation of Ajk is zero for individuals within a populations, and one for an individual with themselves. The output file has the suffix ".relatedness".
+
+[man]: http://vcftools.sourceforge.net/man_latest.html
+
+```{r}
+rel <- read.table("../data/out.relatedness", header = TRUE,
+                  stringsAsFactors = FALSE)
+head(rel)
+```
+
+```{r}
+library("plyr")
+atts_1 <- strsplit(rel$INDV1, split = "-")
+atts_1 <- ldply(atts_1)
+colnames(atts_1) <- c("ind_1", "bact_1", "time_1", "id_1")
+atts_2 <- strsplit(rel$INDV2, split = "-")
+atts_2 <- ldply(atts_2)
+colnames(atts_2) <- c("ind_2", "bact_2", "time_2", "id_2")
+rel <- cbind(rel, atts_1, atts_2)
+head(rel)
+```
+
+```{r}
+rel$ind_match <- rel$ind_1 == rel$ind_2
+rel$bact_match <- rel$bact_1 == rel$bact_2
+rel$time_match <- rel$time_1 == rel$time_2
+```
+
+```{r fig.width=8}
+library("vioplot")
+op <- par(las=2, cex.lab = .75)
+vioplot(rel$RELATEDNESS_AJK[!rel$ind_match & !rel$bact_match & !rel$time_match],
+        rel$RELATEDNESS_AJK[!rel$ind_match & rel$bact_match & !rel$time_match],
+        rel$RELATEDNESS_AJK[!rel$ind_match & !rel$bact_match & rel$time_match],
+        rel$RELATEDNESS_AJK[rel$ind_match & !rel$bact_match & !rel$time_match],
+        rel$RELATEDNESS_AJK[!rel$ind_match & rel$bact_match & rel$time_match],
+        rel$RELATEDNESS_AJK[rel$ind_match & rel$bact_match & !rel$time_match],
+        rel$RELATEDNESS_AJK[rel$ind_match & !rel$bact_match & rel$time_match],
+        rel$RELATEDNESS_AJK[rel$ind_match & rel$bact_match & rel$time_match],
+        names = c("None", "Bact only", "Time only", "Ind only", "Bact & Time",
+                  "Ind & Bact", "Ind & Time", "All"))
+par(op)
+```
+
+As expected, samples from unrelated individuals had a relatedness score close to zero.
+Also, the relatedness score for a sample with itself was always close to 1.
+
+Only the individual, and not the bacteria or timepoint, increased the relatedness score.
+However, the relatedness score was not close to 1, as would be expected from a more traditional DNA sequencing and genotyping pipeline.
+This is likely due to the nature of the data.
+Genotype calls from RNA-sequencing data are not only affected by an individual's genotype at a given base, but also the expression levels of each allele of that gene in a given condition.
+
+## Overlap with response eQTL genes
+
+Do any of the SNPs in this population of six individuals fall in the exons of response eQTL genes?
+
+Obtain list of 198 response eQTL genes.
+
+```
+grep response dc-expr-eqtl.txt | cut -f1 > reqtl_list.txt
+wc -l ../data/reqtl_list.txt 
+198 ../data/reqtl_list.txt
+```
+
+Obtain exonic coordinates for all the response eQTL genes.
+
+```
+grep -f ../data/reqtl_list.txt ../data/exons.txt > ../data/reqtl_exons.txt
+cut -f1 ../data/reqtl_exons.txt | sort | uniq | wc -l
+195
+```
+
+195 were present in the exons file, though from other analyses I know that only 179 of these are detected as expressed in this experiment.
+
+Convert to bed file ([subtract 1 from start coordinate][biostars]).
+
+[biostars]: https://www.biostars.org/p/84686/
+
+```
+awk -v OFS="\t" '{print $2, $3-1, $4, $1}' ../data/reqtl_exons.txt > ../data/reqtl_exons.bed
+```
+
+Use `SnpSift` to return only those SNPs which fall in the intervals of the response eQTL exons ([manual][snpsift-man]).
+
+[snpsift-man]: http://snpeff.sourceforge.net/SnpSift.html#Intervals
+
+```
+java -Xmx4g -jar ~/src/snpEff/SnpSift.jar intervals ../data/reqtl_exons.bed -i ../data/John_Blischak_Project.hg19.20022015.STAR.q1.VQ30.GQ20.cov10.noMiss1.noMAF0.vcf.gz > ../data/reqtl.vcf
+```
+
+There are SNPs!
+
+```
+grep -v "#" ../data/reqtl.vcf | wc -l
+5262
+```
+
+Confirm result using `bedtools`.
+
+```
+bedtools intersect -a ../data/John_Blischak_Project.hg19.20022015.STAR.q1.VQ30.GQ20.cov10.noMiss1.noMAF0.vcf.gz -b ../data/reqtl_exons.bed -u > ../data/reqtl_snps.bed
+```
+
+Again, the same number of SNPs!
+
+```
+wc -l ../data/reqtl_snps.bed
+5262 ../data/reqtl_snps.bed
+```
+
+## ASE reads
+
+Next, investigate the read depth supporting the expression of the two alleles in heterozygotes.
+
+Convert the vcf file to tab-delimited using `SnpSift extractFields`.
+
+```
+java -Xmx4g -jar ~/src/snpEff/SnpSift.jar extractFields ../data/reqtl.vcf CHROM POS REF ALT "GEN[*].GT" "GEN[*].AD" -e . -s ";" > ../data/reqtl_ase.txt
+```
+
+```{r}
+allele <- read.table("../data/reqtl_ase.txt", header = TRUE, comment.char = "",
+                     stringsAsFactors = FALSE)
+colnames(allele) <- c("chr", "pos", "ref", "alt", "GT", "AD")
+```
+
+Extract allele depth (AD).
+
+```{r}
+library("stringr")
+ad_list <- str_split(allele$AD, ";")
+ad_list_list <- lapply(ad_list, str_split, ",")
+ad_ref <- ldply(ad_list_list, function(x) {
+                                sapply(x, function(y) {as.numeric(y[1])})})
+ad_alt <- ldply(ad_list_list, function(x) {
+                                sapply(x, function(y) {as.numeric(y[2])})})
+ad_ref <- as.matrix(ad_ref)
+ad_alt <- as.matrix(ad_alt)
+```
+
+Extract genotype (GT).
+
+```{r}
+gt_list <- str_split(allele$GT, ";")
+convert_geno <- function(g) {
+  result <- character(length = length(g))
+  for (i in seq_along(g)) {
+    if (g[i] == "0/0") {
+      result[i] <- "hom_ref"
+    } else if (g[i] == "0/1") {
+      result[i] <- "het"
+    } else if (g[i] == "1/1") {
+      result[i] <-  "hom_alt"
+    } else if (g[i] == "./.") {
+      result[i] <- NA
+    } else {
+      result <- NULL
+    }
+  }
+  return(result)
+}
+gt_df <- ldply(gt_list, convert_geno)
+```
+
+How many heterozygotes per SNP?
+
+```{r}
+hets_per_snp <- apply(gt_df, 1, function(x) sum(x == "het", na.rm = TRUE))
+summary(hets_per_snp)
+```
+
+How many SNPs have at least one heterozygote for measuring allele-specific expression?
+
+```{r}
+sum(hets_per_snp > 0)
+```
+
+What is the distribution of missing genotypes per SNP?
+
+```{r}
+missing_per_snp <- apply(gt_df, 1, function(x) sum(is.na(x)))
+summary(missing_per_snp)
+```
+
+Half of the SNPs have `r median(missing_per_snp)` genotypes missing out of a total of `r ncol(gt_df)`.
+
+How much allelic imbalance is present in the heterozygotes?
+
+```{r}
+plot(ad_ref[gt_df == "het"], ad_alt[gt_df == "het"],
+     main = "Allelic imbalance", xlab = "Read depth for reference allele",
+     ylab = "Read depth for alternative allele")
+abline(lm(ad_alt[gt_df == "het"] ~ ad_ref[gt_df == "het"]), col = "red")
+```
+
+How does allelic imbalance relate to overall expression level?
+
+```{r}
+ad_sum <- ad_ref + ad_alt
+ad_diff <- abs(ad_ref - ad_alt)
+plot(ad_sum[gt_df == "het"], ad_diff[gt_df == "het"],
+     main = "Allelic imbalance versus overall expression",
+     xlab = "Read depth for both alleles",
+     ylab = "Difference in read depth (absolute value)")
+abline(lm(ad_diff[gt_df == "het"] ~ ad_sum[gt_df == "het"]), col = "red")
+```
+
+Overall this looks promising.
+
+```{r info}
+sessionInfo()
+```

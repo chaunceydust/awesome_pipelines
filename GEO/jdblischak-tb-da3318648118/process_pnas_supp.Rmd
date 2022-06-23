@@ -1,0 +1,80 @@
+Process supplemental data from PNAS paper
+========================================================
+
+John Blischak
+
+Last updated: `r as.character(Sys.Date())`
+
+Code version: `r system("git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Data version: `r system("git --git-dir=../data/.git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Process supplemental data from PNAS paper.
+[Barreiro et al., 2012][barreiro2012] infected dendritic cells (DCs) with MTB and identified response eQTLs.
+
+[barreiro2012]: http://www.pnas.org/content/109/4/1204.long
+
+```{r global-chunk-options, echo = FALSE}
+source("knitr_options.R")
+```
+
+Download and process DC expression data (Table S1).
+
+```{r s01-expression}
+library("gdata")
+dc_expr <- read.xls("http://www.pnas.org/content/suppl/2012/01/10/1115761109.DCSupplemental/sd01.xls",
+                    skip = 1, nrow = 12958, stringsAsFactors = FALSE)
+rownames(dc_expr) <- dc_expr$Ensembl.gene.ID
+dc_expr <- dc_expr[, c(-1, -6)]
+colnames(dc_expr) <- c("name", "logFC", "PValue", "FDR")
+write.table(dc_expr, file = "../data/dc-expr.txt", quote = FALSE, sep = "\t")
+head(dc_expr)
+```
+
+Download and process DC eQTL data (Table S3).
+
+```{r s03-eQTL}
+dc_eqtl <- read.xls("http://www.pnas.org/content/suppl/2012/01/10/1115761109.DCSupplemental/sd03.xls",
+                 skip = 2, nrow = 11954, stringsAsFactors = FALSE)
+write.table(dc_eqtl, file = "../data/dc-eqtl.txt", quote = FALSE, sep = "\t")
+dc_eqtl[1, ]
+```
+
+Classify DC eQTL results into categories:
+
+*  "response": eQTL pre- **or** post-infection
+*  "general": eQTL pre- **and** post-infection
+*  "non": eQTL pre- **nor** post-infection
+
+```{r}
+eqtl_type <- character(length = nrow(dc_eqtl))
+for (i in 1:nrow(dc_eqtl)) {
+  if (dc_eqtl$General.eQTL_2f[i] == "YES") {
+    eqtl_type[i] <- "general"
+  } else if (dc_eqtl$NI.Only.eQTL_2f[i] == "YES" | 
+             dc_eqtl$MTB.Only.eQTL_2f[i] == "YES") {
+    eqtl_type[i] <- "response"
+  } else {
+    eqtl_type[i] <- "non"
+  }
+}
+eqtl_type <- data.frame(eqtl_type, row.names = dc_eqtl$Ensembl.gene.ID,
+                        stringsAsFactors = FALSE)
+table(eqtl_type$eqtl_type)
+```
+
+Combine eQTL classifications with differential expression results from DCs.
+
+```{r}
+expr_eqtl <- merge(dc_expr, eqtl_type, by = "row.names")
+colnames(expr_eqtl)[1] <- "id"
+stopifnot(nrow(expr_eqtl) <= min(nrow(dc_expr), nrow(eqtl_type)))
+stopifnot(nrow(expr_eqtl) > 0)
+write.table(expr_eqtl, file = "../data/dc-expr-eqtl.txt", quote = FALSE, sep = "\t",
+            row.names = FALSE)
+head(expr_eqtl)
+```
+
+```{r info}
+sessionInfo()
+```

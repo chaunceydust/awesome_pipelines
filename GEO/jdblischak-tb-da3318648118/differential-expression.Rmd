@@ -1,0 +1,646 @@
+Differential expression
+========================================================
+
+Last updated: `r as.character(Sys.Date())`
+
+Code version: `r system("git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Data version: `r system("git --git-dir=../data/.git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Test for differential expression after bacterial expression using a standard limma approach.
+The model is set up using a a treatment-contrast parametrization.
+The individual (ind), the type of bacteria (bact), and the time post-infection (time) are treated as fixed effects.
+The covariates RIN (rin) and extraction batch (extr) are included in the model to correct for these confounding effects.
+The RNA-seq data is processed for use with limma using `voom`.
+
+Generated in this file:
+
+*  Table S1 - Log2 transformed counts per million
+*  Table S2 - limma differential expression statistics
+*  Figure 1 - Differential expression results
+*  Table S7 - Pairwise overlaps of DE genes for all bacterial infections
+*  Table S8 - Pairwise DE tests for all bacterial infections
+*  Figure S2 - PCA of uncorrected vs batch-corrected expression matrix
+*  Figure S7 - H37Rv versus GC1237 infections
+
+```{r setup, echo = FALSE}
+source("knitr_options.R")
+opts_chunk$set(message = FALSE)
+```
+
+```{r packages}
+library("limma")
+library("edgeR")
+library("plyr")
+library("ggplot2")
+theme_set(theme_bw(base_size = 16))
+library("biomaRt")
+library("RColorBrewer")
+library("VennDiagram")
+library("gridExtra")
+```
+
+Read in the data of counts (row = sample, column = feature).
+
+```{r data}
+full <- read.table("../data/counts_per_sample.txt", header = TRUE,
+                   stringsAsFactors = FALSE)
+full <- full[order(full$dir), ]
+rownames(full) <- paste(full$dir, full$ind, full$bact, full$time, sep = ".")
+counts <- t(full[, grep("ENSG", colnames(full))])
+# Filter lowly expressed genes
+counts <- counts[rowSums(cpm(counts) > 1) > 6, ]
+```
+
+The first `r sum(!grepl("ENSG", colnames(full)))` columns are meta-data about each sample, and the remaining are the gene counts.
+Only the `r nrow(counts)` genes which have at least one read per million (pre-normalization with TMM) in at least six of the `r nrow(full)` samples are kept.
+
+Prepare the factors for use in the linear model.
+
+```{r annotation}
+groups <- full[, c("ind", "bact", "time", "extr", "rin")]
+groups$bact <- gsub("\\+", "plus", groups$bact)
+groups$ind <- factor(groups$ind)
+groups$bact <- factor(groups$bact, levels = c("none", "Rv", "Rvplus", "GC",
+                                              "BCG", "Smeg", "Yers", "Salm",
+                                              "Staph"))
+groups$time <- factor(groups$time, levels = c(4, 18, 48))
+groups$extr <- factor(groups$extr)
+head(groups)
+```
+
+Preparing the data for modeling:
+
+*  Create the model using a treatment-contrast parametrization
+*  Normalize with TMM (`calcNormFactors`)
+*  Transform with `voom`
+
+```{r model}
+design <- model.matrix(~ ind + bact*time + extr + rin, data = groups)
+# Clean up names of design matrix
+colnames(design) <- gsub("ind", "", colnames(design))
+colnames(design) <- gsub("time", "t", colnames(design))
+colnames(design) <- gsub("bact", "", colnames(design))
+colnames(design) <- gsub(":", ".", colnames(design))
+colnames(design)[1] <- "Intercept"
+# Remove Staph 48 hr timepoint that does not exist
+design <- design[, -which(colnames(design) == "Staph.t48")]
+print(colnames(design))
+y <- DGEList(counts)
+y <- calcNormFactors(y)
+v <- voom(y, design)
+fit <- lmFit(v, design)
+```
+
+Each bacterial infection is compared to its time-match control (labeled "none").
+
+```{r test-contrasts}
+cont_matrix <- makeContrasts(# 4 hours
+                             Rv.4 = Rv,
+                             GC.4 = GC,
+                             Rvplus.4 = Rvplus,
+                             BCG.4 = BCG,
+                             Smeg.4 = Smeg,
+                             Yers.4 = Yers,
+                             Salm.4 = Salm,
+                             Staph.4 = Staph,
+                             # 18 hours
+                             Rv.18 = Rv + Rv.t18,
+                             GC.18 = GC + GC.t18,
+                             Rvplus.18 = Rvplus + Rvplus.t18,
+                             BCG.18 = BCG + BCG.t18,
+                             Smeg.18 = Smeg + Smeg.t18,
+                             Yers.18 = Yers + Yers.t18,
+                             Salm.18 = Salm + Salm.t18,
+                             Staph.18 = Staph + Staph.t18,
+                             # 48 hours
+                             Rv.48 = Rv + Rv.t48,
+                             GC.48 = GC + GC.t48,
+                             Rvplus.48 = Rvplus + Rvplus.t48,
+                             BCG.48 = BCG + BCG.t48,
+                             Smeg.48 = Smeg + Smeg.t48,
+                             Yers.48 = Yers + Yers.t48,
+                             Salm.48 = Salm + Salm.t48,
+                             levels = design)
+fit2 <- contrasts.fit(fit, cont_matrix)
+fit2 <- eBayes(fit2)
+stats_list <- list()
+for (coef in colnames(cont_matrix)) {
+  stats_list[[coef]] <- topTable(fit2, coef = coef, number = nrow(counts),
+                                 sort.by = "none")
+}
+stats_list <- llply(stats_list, function(x) cbind(gene = rownames(x), x))
+stats <- ldply(stats_list, .id = "test")
+stats$gene <- as.character(stats$gene)
+```
+
+Obtain gene names to annotate results.
+Need to specify archive so that names agree with the count data.
+
+```{r obtain-gene-names}
+ensembl <- useMart(host = "sep2013.archive.ensembl.org",
+                   biomart = "ENSEMBL_MART_ENSEMBL",
+                   dataset = "hsapiens_gene_ensembl")
+gene_names <- getBM(attributes = c("ensembl_gene_id", "external_gene_id"),
+                        filters = "ensembl_gene_id",
+                        values = rownames(y$counts),
+                        mart = ensembl)
+stopifnot(nrow(gene_names) == nrow(y$counts),
+          rownames(y$counts) == gene_names$ensembl_gene_id)
+```
+
+### Figure S2 - PCA
+
+Create a matrix of expression values (log~2~ counts per million) for visualizing the data.
+Since `y` is an object of class DGElist, the TMM normalized library sizes are automatically used.
+Also, a prior count of 0.25 is added to avoid taking the log of zero.
+
+```{r log-cpm}
+dat_cpm <- cpm(y, log = TRUE)
+# Remove leading number from sample names. I had given them the unique 
+# identifiers 1-156, which were useful when pre-processing the data but are no 
+# longer needed.
+colnames(dat_cpm) <- sapply(strsplit(colnames(dat_cpm), "\\."),
+                            function(x) {paste(x[2:4], collapse = ".")})
+```
+
+PCA of uncorrected log~2~ transformed cpm values:
+
+```{r pca-uncorrected}
+# Including some default settings just to be explicit
+pca <- prcomp(x = t(dat_cpm), retx = TRUE, center = TRUE, scale. = TRUE)
+pca_anno <- cbind(groups, pca$x)
+pca_anno$control <- ifelse(pca_anno$bact == "none", "control", "infection")
+pca_anno$control <- factor(pca_anno$control, levels = c("control", "infection"))
+plot_pca <- ggplot(mapping = aes(x = PC1, y = PC2,
+                                 col = time, size = control)) +
+  geom_point() +
+  scale_size_discrete(range = c(5, 2)) +
+  scale_color_brewer(palette = "Dark2")
+pca_uncorrected <- plot_pca %+% pca_anno +
+  labs(title = "PCA: Uncorrected log CPM") +
+  theme(plot.title = element_text(size = rel(1)))
+pca_uncorrected
+```
+
+Remove effect of RIN score and extraction batch.
+
+```{r regress}
+# Regress out the effect of RIN and extraction batch
+design_base <- model.matrix(~ind + bact*time, data = groups)
+design_base <- design_base[, -ncol(design_base)] # Remove Staph.48
+dat_cpm_protection <- removeBatchEffect(x = dat_cpm, batch = groups$extr,
+                                        covariates = groups$rin,
+                                        design = design_base)
+```
+
+PCA of batch-corrected log~2~ transformed cpm values (protecting variables of interest):
+
+```{r pca-corrected}
+# Including some default settings just to be explicit
+pca_regress_protection <- prcomp(x = t(dat_cpm_protection), retx = TRUE,
+                                 center = TRUE, scale. = TRUE)
+pca_anno_regress_protection <- cbind(groups, pca_regress_protection$x)
+pca_anno_regress_protection$control <- ifelse(pca_anno_regress_protection$bact == "none",
+                                   "control", "infection")
+pca_anno_regress_protection$control <- factor(pca_anno_regress_protection$control,
+                                   levels = c("control", "infection"))
+pca_corrected_protection <- plot_pca %+% pca_anno_regress_protection +
+  labs(title = "PCA: Batch-corrected log CPM\nprotecting variables of interest") +
+  theme(plot.title = element_text(size = rel(1)))
+pca_corrected_protection
+```
+
+PCA of uncorrected log~2~ transformed cpm values (without protecting variables of interest):
+
+```{r regress-wo-protection}
+# Regress out the effect of RIN and extraction batch
+dat_cpm_wo_protection <- removeBatchEffect(x = dat_cpm, batch = groups$extr,
+                                           covariates = groups$rin,
+                                           design = model.matrix(~1,
+                                                                 data = groups))
+```
+
+Not protecting the variables of interest does not make a large difference in the batch correction because the study was designed to not confound technical factors.
+
+```{r pca-corrected-wo-protection}
+# Including some default settings just to be explicit
+pca_regress_wo_protection <- prcomp(x = t(dat_cpm_wo_protection), retx = TRUE,
+                                    center = TRUE, scale. = TRUE)
+pca_anno_regress_wo_protection <- cbind(groups, pca_regress_wo_protection$x)
+pca_anno_regress_wo_protection$control <- ifelse(pca_anno_regress_wo_protection$bact == "none",
+                                   "control", "infection")
+pca_anno_regress_wo_protection$control <- factor(pca_anno_regress_wo_protection$control,
+                                   levels = c("control", "infection"))
+pca_corrected_wo_protection <- plot_pca %+% pca_anno_regress_wo_protection +
+  labs(title = "PCA: Batch-corrected log CPM\nwithout protecting variables of interest") +
+  theme(plot.title = element_text(size = rel(1)))
+pca_corrected_wo_protection
+```
+
+```{r save-pca}
+pdf("../figs/fig-S02-pca.pdf", width = 8.5, height = 10, useDingbats = FALSE)
+grid.arrange(pca_uncorrected, pca_corrected_protection,
+             pca_corrected_wo_protection)
+dev.off()
+```
+
+Use batch-corrected data with the variables of interest protected for downstream analyses.
+
+```{r use-batch-corrected-w-protection}
+dat_cpm <- dat_cpm_protection
+```
+
+### Table S1
+
+Save the matrix of expression values (log~2~ counts per million) for table S1.
+
+```{r table-s1}
+table_s1 <- data.frame(id = rownames(dat_cpm),
+                       name = gene_names$external_gene_id,
+                       dat_cpm,
+                       stringsAsFactors = FALSE)
+# plus signs were converted to periods
+colnames(table_s1)[3:ncol(table_s1)] <- colnames(dat_cpm)
+write.table(table_s1, "../data/table-s1.txt", quote = FALSE, sep = "\t",
+            row.names = FALSE)
+```
+
+### Table S2
+
+Create wide table of DE stats for table S2.
+
+```{r}
+# Separate into each of the 23 separate tests
+table_s2 <- dlply(stats, "test")
+# # Attach names of test to column names
+# table_s2 <- lapply(table_s2, function(x) {
+#   colnames(x) <- paste(colnames(x), x$test[1], sep = ".")
+#   return(x)
+#   })
+# Combine columns into a wide data frame
+table_s2 <- do.call(cbind, table_s2)
+# Remove test columns
+table_s2[, grep("test", colnames(table_s2))] <- list(NULL)
+# Remove gene columns
+stopifnot(rownames(dat_cpm) == table_s2$Rv.4.gene,
+          !is.null(table_s2$Rv.4.gene))
+table_s2[, grep("gene", colnames(table_s2))] <- list(NULL)
+# Add gene id's and names
+table_s2 <- data.frame(id = rownames(dat_cpm),
+                       name = gene_names$external_gene_id,
+                       table_s2,
+                       stringsAsFactors = FALSE)
+write.table(table_s2, "../data/table-s2.txt", quote = FALSE, sep = "\t",
+            row.names = FALSE)
+```
+
+Save intermediate R objects as a record of the different steps in the analysis.
+Also, save long-form of differential expression statistics, `stats`, as `de-stats.txt` because it is easier to manipulate for future analyses compared to the more traditional, wide-form of the data in table S2.
+
+```{r write-data}
+saveRDS(v, "../data/expression.rds")
+saveRDS(fit, "../data/de-model.rds")
+saveRDS(fit2, "../data/de-results-bact-time-contrasts.rds")
+names_split <- unlist(strsplit(as.character(stats$test), "\\."))
+stats$bact <- names_split[c(TRUE, FALSE)]
+stats$time <- names_split[c(FALSE, TRUE)]
+write.table(stats, "../data/de-stats.txt", quote = FALSE, sep = "\t",
+            row.names = FALSE)
+```
+
+### Figure 1A
+
+Plot number of differentially expressed genes at FDR < 5% for each of the three timepoints.
+
+```{r colors}
+my_cols <- brewer.pal(n = 9, name = "Greens")
+my_cols <- c(rev(my_cols)[1:5], "purple", "blue", "orange")
+```
+
+```{r}
+de_plot <- ddply(stats, c("bact", "time"), summarise,
+                 num_de = sum(adj.P.Val < .05))
+de_plot$bact <- sub("plus", "+", de_plot$bact)
+de_plot$bact <- ordered(de_plot$bact, levels = c("Rv", "Rv+", "GC", "BCG",
+                        "Smeg", "Yers", "Salm", "Staph"))
+de_plot$time <- ordered(de_plot$time, levels = c(4, 18, 48))
+
+num_de_time <- ggplot(de_plot) +
+  geom_bar(aes(x = bact, y = num_de, fill = bact), stat = "identity",
+           col = "black") +
+  facet_grid(. ~ time) +
+  scale_fill_manual(values = my_cols) +
+  labs(x = "Bacterial infection",
+       y = "Number of DE genes",
+       fill = "Bacteria") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank())
+num_de_time
+```
+
+```{r}
+pdf("../figs/fig-01A-number-de-genes.pdf", width = 8.5, height = 5,
+    useDingbats = FALSE)
+num_de_time
+dev.off()
+```
+
+### Figure 1B
+
+Create volcano plot of 18 hours post-infection with MTB H37Rv.
+
+```{r}
+color_points <- function(qval, lfc, q_cut, lfc_cut) {
+  # Color the points for each gene according to q-value and log fold-change
+  # thresholds.
+  # Returns an unordered factor with the following levels:
+  # level 1: qval > q_cut
+  # level 2: qval < q_cut & lfc < lfc_cut
+  # level 3: qval < q_cut & lfc > lfc_cut
+  signif_levels <- c(paste0("q > ", q_cut), 
+                     paste0("q < ", q_cut, " & log2FC < ", lfc_cut),
+                     paste0("q < ", q_cut, " & log2FC > ", lfc_cut))
+  signif_points <- ifelse(qval > q_cut, signif_levels[1],
+                          ifelse(abs(lfc) < lfc_cut, signif_levels[2],
+                                 signif_levels[3]))
+  signif_points <- factor(signif_points, levels = signif_levels)
+  return(signif_points)
+}
+
+volcano_plot <- function(pval, qval, lfc, q_cut, lfc_cut) {
+  # Creating figure similar to Figure 1A of Barreiro, Tailleux, et al., 2012.
+  signif_points <- color_points(qval, lfc, q_cut, lfc_cut)
+  dat <- data.frame(p = -log10(pval), lfc = lfc, signif = signif_points)
+  ggplot(dat) + geom_point(aes(x = lfc, y = p, color = signif)) +
+    scale_color_manual(values = c("black", "grey", "#00441B"), drop = FALSE) +
+    labs(title = "Volcano plot", x = expression(paste(log[2], " fold change")),
+         y = expression(paste("-", log[10], " p-value"))) +
+    theme(legend.title=element_blank(),
+          legend.direction = "vertical")
+}
+
+volcano_rv_18 <- volcano_plot(stats$P.Value[stats$test == "Rv.18"],
+                              stats$adj.P.Val[stats$test == "Rv.18"],
+                              stats$logFC[stats$test == "Rv.18"],
+                              q_cut = .05, lfc_cut = .5) +
+                 labs(title = "MTB H37Rv - 18 hours") +
+                 scale_x_continuous(breaks = seq(-6, 10, 2)) +
+                 theme(legend.position = "bottom",
+                       panel.grid.minor.x = element_blank(),
+                       panel.grid.minor.y = element_blank(),
+                       panel.grid.major.x = element_blank(),
+                       panel.grid.major.y = element_blank())
+volcano_rv_18
+```
+
+```{r}
+pdf("../figs/fig-01B-Rv-18-volcano.pdf", width = 6, height = 7,
+    useDingbats = FALSE)
+volcano_rv_18
+dev.off()
+```
+
+### Figure 1C
+
+Create Venn diagram to compare DE genes after 4, 18, and 48 hours post-infection with MTB H37Rv.
+
+```{r}
+grid.newpage()
+venn_rv <- draw.triple.venn(
+  area1 = sum(stats$adj.P.Val[stats$bact == "Rv" & stats$time == 4] < .05),
+  area2 = sum(stats$adj.P.Val[stats$bact == "Rv" & stats$time == 18] < .05),
+  area3 = sum(stats$adj.P.Val[stats$bact == "Rv" & stats$time == 48] < .05),
+  n12 = sum(stats$adj.P.Val[stats$bact == "Rv" & stats$time == 4] < .05 &
+            stats$adj.P.Val[stats$bact == "Rv" & stats$time == 18] < .05),
+  n23 = sum(stats$adj.P.Val[stats$bact == "Rv" & stats$time == 18] < .05 &
+            stats$adj.P.Val[stats$bact == "Rv" & stats$time == 48] < .05),
+  n13 = sum(stats$adj.P.Val[stats$bact == "Rv" & stats$time == 4] < .05 &
+            stats$adj.P.Val[stats$bact == "Rv" & stats$time == 48] < .05),
+  n123 = sum(stats$adj.P.Val[stats$bact == "Rv" & stats$time == 4] < .05 &
+             stats$adj.P.Val[stats$bact == "Rv" & stats$time == 18] < .05 &
+             stats$adj.P.Val[stats$bact == "Rv" & stats$time == 48] < .05),
+  category = c("4 hrs", "18 hrs", "48 hrs"),
+#   fill = c("darkolivegreen3", "cadetblue3", "darkorchid"),
+  alpha = c(0.5, 0.5, 0.5), col = "black", cex = 2, cat.cex = 2,
+  euler.d = FALSE, scaled = FALSE, ind = TRUE)
+```
+
+```{r}
+pdf("../figs/fig-01C-Rv-venn.pdf", width = 6, height = 6, useDingbats = FALSE)
+grid.draw(venn_rv)
+dev.off()
+```
+
+As a check, this performs the same analysis as above using limma's `vennDiagram` function.
+
+```{r}
+cont_time <- makeContrasts(Rv.4 = Rv,
+                           Rv.18 = Rv + Rv.t18,
+                           Rv.48 = Rv + Rv.t48,
+                           levels = fit$design)
+fit_time <- contrasts.fit(fit, cont_time)
+fit_time <- eBayes(fit_time)
+summary(decideTests(fit_time))
+vennDiagram(decideTests(fit_time))
+vennDiagram(decideTests(fit_time), include = c("up", "down"),
+            counts.col = c("red", "black"), lwd = 2)
+```
+
+### Table S7
+
+Create table of number of DE genes using the approach of intersecting lists of DE genes.
+
+```{r}
+overlap_de_lists <- function(b1, b2, t1, t2, stats, cutoff = 0.05) {
+  # Returns a data frame (nrow=1) with the number of genes up or downreguled by the two bacteria,
+  # either shared or unique.
+  
+  # Get lists of all genes upreglated and downregulated by each of the bacteria
+  up_1_genes_all <- stats$gene[stats$bact == b1 & stats$time == t1 &
+                               stats$logFC > 0 & stats$adj.P.Val < cutoff]
+  down_1_genes_all <- stats$gene[stats$bact == b1 & stats$time == t1 &
+                                   stats$logFC < 0 & stats$adj.P.Val < cutoff]
+
+  up_2_genes_all <- stats$gene[stats$bact == b2 & stats$time == t2 &
+                               stats$logFC > 0 & stats$adj.P.Val < cutoff]
+  down_2_genes_all <- stats$gene[stats$bact == b2 & stats$time == t2 &
+                                   stats$logFC < 0 & stats$adj.P.Val < cutoff]
+  
+  # Partition the above lists to get counts of genes per category
+  up_shared <- length(intersect(up_1_genes_all, up_2_genes_all))
+  down_shared <- length(intersect(down_1_genes_all, down_2_genes_all))
+  up_1 <- length(setdiff(up_1_genes_all, up_2_genes_all))
+  down_1 <- length(setdiff(down_1_genes_all, down_2_genes_all))
+  up_2 <- length(setdiff(up_2_genes_all, up_1_genes_all))
+  down_2 <- length(setdiff(down_2_genes_all, down_1_genes_all))
+
+  # Confirm that the counts per category add up to the total number of DE genes
+  stopifnot(sum(up_1, up_2, up_shared) == length(union(up_1_genes_all, up_2_genes_all)),
+            sum(down_1, down_2, down_shared) == length(union(down_1_genes_all, down_2_genes_all)))
+  
+  result <- data.frame(time_1 = t1, time_2 = t2, bact_1 = b1, bact_2 = b2,
+                       up_1, down_1, up_shared, down_shared, up_2, down_2)
+  return(result)
+}
+```
+
+```{r}
+overlap_de_lists("Rv", "GC", 18, 18, stats)
+bact <- c("Rv", "Rvplus", "GC", "BCG", "Smeg", "Yers", "Salm", "Staph")
+
+pairwise_overlaps <- NULL
+for (t in c(4, 18, 48)) {
+  for (b1 in 1:(length(bact)-1)) {
+    for (b2 in (b1+1):length(bact)) {
+      # print(c(t, bact[b1], bact[b2]))
+      if (t == 48 & bact[b1] == "Staph" | bact[b2] == "Staph") {
+        next()
+      }
+      pairwise_overlaps <- rbind(pairwise_overlaps,
+                                 overlap_de_lists(bact[b1], bact[b2], t, t, stats))
+    }
+  }
+}
+```
+
+```{r}
+stopifnot(pairwise_overlaps$time_1 == pairwise_overlaps$time_2)
+pairwise_overlaps[["time_1"]] <- NULL
+colnames(pairwise_overlaps)[1] <- "time"
+write.table(pairwise_overlaps, file = "../data/table-s7.txt", quote = FALSE, sep = "\t",
+            row.names = FALSE)
+```
+
+### Table S8
+
+Do all pairwise contrasts of betas.
+
+```{r}
+bact <- c("Rv", "Rvplus", "GC", "BCG", "Smeg", "Yers", "Salm", "Staph")
+num_diff <- list()
+for (t in c("4", "18", "48")) {
+  num_diff[[t]] <- matrix(NA, nrow = length(bact), ncol = length(bact),
+                   dimnames = list(bact, bact))
+}
+for (t in c("4", "18", "48")) {
+  for (b1 in 1:length(bact)) {
+    for (b2 in b1:length(bact)) {
+      if (t == "48" & (bact[b1] == "Staph" | bact[b2] == "Staph") | b1 == b2) {
+        next()
+      }
+      if (t == "4") {
+        cont_tmp <- paste0(bact[b1], "-", bact[b2])
+      } else {
+        cont_tmp <- paste0(bact[b1], "+", bact[b1], ".t", t, "-",
+                           bact[b2], "-", bact[b2], ".t", t)
+      }
+      print(cont_tmp)
+      cont_matrix_tmp <- makeContrasts(contrasts = cont_tmp, levels = design)
+      fit2_tmp <- contrasts.fit(fit, cont_matrix_tmp)
+      fit2_tmp <- eBayes(fit2_tmp)
+      stats_tmp <- topTable(fit2_tmp, number = nrow(counts),
+                            sort.by = "none")
+      num_diff[[t]][b1, b2] <- sum(stats_tmp$adj.P.Val < 0.05, na.rm = TRUE)
+      num_diff[[t]][b2, b1] <- sum(stats_tmp$adj.P.Val < 0.05, na.rm = TRUE)
+      # browser()
+    }
+  }
+}
+```
+
+```{r results="asis"}
+bold_names <- function(x) {
+  rownames(x) <- paste0("**", rownames(x), "**")
+  colnames(x) <- paste0("**", colnames(x), "**")
+  return(x)
+}
+num_diff <- lapply(num_diff, bold_names)
+lapply(num_diff, kable, format = "markdown")
+```
+
+### Figure S7
+
+Compare Rv and GC infections.
+
+```{r}
+ma_plot <- function(df, title = "", q_cut, lfc_cut) {
+  signif_points <- color_points(df$adj.P.Val, df$logFC, q_cut, lfc_cut)
+  df <- cbind(df, signif_points)
+  ggplot(df, aes(x = AveExpr, y = logFC, color = signif_points)) +
+    geom_point() +
+    labs(title = title, x = "Average expression",
+         y = expression(paste(log[2], " fold change"))) +
+    scale_color_manual(values = c("black", "grey", "#00441B"), drop = FALSE) +
+    theme(legend.position="none")
+}
+
+cont_rv_gc <- makeContrasts(Rv.GC.4 = Rv - GC,
+                            Rv.GC.18 = Rv + Rv.t18 - GC - GC.t18,
+                            Rv.GC.48 = Rv + Rv.t48 - GC - GC.t48,
+                            levels = fit$design)
+fit_rv_gc <- contrasts.fit(fit, cont_rv_gc)
+fit_rv_gc <- eBayes(fit_rv_gc)
+summary(decideTests(fit_rv_gc))
+stats_rv_gc <- list()
+# 4 hours
+stats_rv_gc[["4"]] <- topTable(fit_rv_gc, coef = "Rv.GC.4", number = nrow(counts),
+                               sort.by = "none")
+volcano_rv_gc_4 <- volcano_plot(stats_rv_gc[["4"]]$P.Value,
+                              stats_rv_gc[["4"]]$adj.P.Val,
+                              stats_rv_gc[["4"]]$logFC,
+                              q_cut = .05, lfc_cut = .5) +
+                 labs(title = "H37Rv vs. GC1237 - 4 hours") +
+                 scale_x_continuous(breaks = seq(-6, 10, 2))
+volcano_rv_gc_4
+ma_rv_gc_4 <- ma_plot(stats_rv_gc[["4"]], title = "H37Rv vs. GC1237 - 4 hours",
+                      q_cut = .05, lfc_cut = .5)
+ma_rv_gc_4
+# 18 hours
+stats_rv_gc[["18"]] <- topTable(fit_rv_gc, coef = "Rv.GC.18", number = nrow(counts),
+                               sort.by = "none")
+volcano_rv_gc_18 <- volcano_plot(stats_rv_gc[["18"]]$P.Value,
+                              stats_rv_gc[["18"]]$adj.P.Val,
+                              stats_rv_gc[["18"]]$logFC,
+                              q_cut = .05, lfc_cut = .5) +
+                 labs(title = "H37Rv vs. GC1237 - 18 hours") +
+                 scale_x_continuous(breaks = seq(-6, 10, 2))
+volcano_rv_gc_18
+ma_rv_gc_18 <- ma_plot(stats_rv_gc[["18"]],
+                       title = "H37Rv vs. GC1237 - 18 hours",
+                       q_cut = .05, lfc_cut = .5)
+ma_rv_gc_18
+# 48 hours
+stats_rv_gc[["48"]] <- topTable(fit_rv_gc, coef = "Rv.GC.48", number = nrow(counts),
+                               sort.by = "none")
+volcano_rv_gc_48 <- volcano_plot(stats_rv_gc[["48"]]$P.Value,
+                              stats_rv_gc[["48"]]$adj.P.Val,
+                              stats_rv_gc[["48"]]$logFC,
+                              q_cut = .05, lfc_cut = .5) +
+                 labs(title = "H37Rv vs. GC1237 - 48 hours") +
+                 scale_x_continuous(breaks = seq(-6, 10, 2))
+volcano_rv_gc_48
+ma_rv_gc_48 <- ma_plot(stats_rv_gc[["48"]],
+                       title = "H37Rv vs. GC1237 - 48 hours",
+                       q_cut = .05, lfc_cut = .5)
+ma_rv_gc_48
+```
+
+```{r}
+pdf("../figs/fig-S07-Rv-v-GC.pdf", width = 12, height = 10, useDingbats = FALSE)
+grid.arrange(volcano_rv_gc_4 + theme(text = element_text(size = 12)),
+             ma_rv_gc_4 + theme(text = element_text(size = 12)),
+             volcano_rv_gc_18 + theme(text = element_text(size = 12)),
+             ma_rv_gc_18 + theme(text = element_text(size = 12)),
+             volcano_rv_gc_48 + theme(text = element_text(size = 12)),
+             ma_rv_gc_48 + theme(text = element_text(size = 12)),
+             widths = unit(c(1.3, 1), "null"))
+dev.off()
+```
+
+```{r info}
+sessionInfo()
+```

@@ -1,0 +1,130 @@
+Boxplots of example genes
+========================================================
+
+Last updated: `r as.character(Sys.Date())`
+
+Code version: `r system("git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Data version: `r system("git --git-dir=../data/.git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Plotting boxplots of example genes to illustrate motifs.
+
+```{r global-chunk-options, echo = FALSE}
+source("knitr_options.R")
+opts_chunk$set(fig.width = 12, fig.height = 12, warning = FALSE)
+```
+
+```{r}
+library("ggplot2")
+library("gridExtra")
+```
+
+Log2 counts per million are stored in Table S1.
+
+```{r input}
+table_s1 <- read.table("../data/table-s1.txt", header = TRUE,
+                       stringsAsFactors = FALSE)
+anno <- read.table("../data/annotation.txt", header = TRUE,
+                   stringsAsFactors = FALSE)
+```
+
+```{r}
+gene_conver <- table_s1$id
+names(gene_conver) <- table_s1$name
+dat_cpm <- table_s1
+dat_cpm[c("id", "name")] <- list(NULL)
+rownames(dat_cpm) <- table_s1$id
+dat_cpm <- as.matrix(dat_cpm)
+dat_full <- data.frame(anno[, c("ind", "bact", "time")], t(dat_cpm))
+stopifnot(substr(rownames(dat_full), 1, 4) == dat_full$ind)
+```
+
+```{r}
+target_name <- c("IL24", "IRF2", "TLR2", # 18 - all
+                 "NCF2", "TNFSF13", "CSF1", # 18 - mtb
+                 "IL1R1", "IRF1", "PILRB", # 18 - virulent
+                 "TLR8", "TGFB1", "IL18", # 18 - yers-salm
+                 "SOCS7", "STAT1", "IFI30", # 48 - all
+                 "CCL1", "ATP6V1A", "IL27RA", # 48 - mtb
+                 "MAP3K4", "SEMA4G", "BTG1", # 48 - virulent
+                 "HLA-DPB1", "IL10RB", "CD248" # 48 - yers-salm
+                 )
+target_id <- gene_conver[target_name]
+target_time <- c(rep(18, 12), rep(48, 12))
+stopifnot(length(target_name) == length(target_id),
+          length(target_name) == length(target_time))
+```
+
+Read in log fold changes, where each sample was compared to its time-matched control (the two values were subtracted).
+
+```{r}
+dat_fc <- read.table("../data/fold-change.txt", header = TRUE,
+                     stringsAsFactors = FALSE)
+dat_fc <- dat_fc <- dat_fc[, c("ind", "bact", "time", target_id)]
+```
+
+```{r}
+dat_fc$bact <- ordered(dat_fc$bact, levels = c("Rv", "Rv+", "GC", "BCG",
+                                               "Smeg", "Yers", "Salm", "Staph"))
+```
+
+```{r}
+library("RColorBrewer")
+my_cols <- brewer.pal(n = 9, name = "Greens")
+my_cols <- c(rev(my_cols)[1:5], "purple", "blue", "orange")
+```
+
+```{r plot-function}
+plot_gene <- ggplot(data = NULL, aes(x = bact, y = g, fill = bact)) +
+  geom_boxplot() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(x = "Bacterial infection",
+       y = expression(paste(log[2], " fold change"))) +
+  theme_bw(base_size = 12) +
+  theme(plot.title = element_text(size = rel(1.25)),
+        legend.position="none",
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1),
+        panel.grid.minor.x = element_blank(),
+        panel.grid.minor.y = element_blank(),
+        panel.grid.major.x = element_blank(),
+        panel.grid.major.y = element_blank()
+        ) +
+  scale_fill_manual(values = my_cols)
+```
+
+```{r CCL1}
+g <- dat_fc[, target_id[target_name == "CCL1"]]
+dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+dat_temp <- dat_temp[dat_temp$time == 48, ]
+ccl1 <- plot_gene %+% dat_temp + labs(title = "CCL1")
+```
+
+```{r}
+plot_list <- vector("list", length(target_name))
+names(plot_list) <- target_name
+for (i in seq_along(target_name)) {
+  g <- dat_fc[, target_id[i]]
+  dat_temp <- data.frame(dat_fc[, c("ind", "bact", "time")], g)
+  dat_temp <- dat_temp[dat_temp$time == target_time[i], ]
+  plot_list[[target_name[i]]] <- plot_gene %+% dat_temp + labs(title = target_name[i])
+}
+```
+
+```{r}
+do.call(grid.arrange, plot_list[1:12])
+pdf("../figs/fig-03B-boxplots-18h.pdf", width = 8, height = 12,
+    useDingbats = FALSE)
+# png("../figs/fig-03B-boxplots-18h.png")
+do.call(grid.arrange, plot_list[1:12])
+dev.off()
+do.call(grid.arrange, plot_list[13:24])
+pdf("../figs/fig-04B-boxplots-48h.pdf", width = 8, height = 12,
+    useDingbats = FALSE)
+# png("../figs/fig-04B-boxplots-48h.png")
+do.call(grid.arrange, plot_list[13:24])
+dev.off()
+```
+
+```{r info}
+sessionInfo()
+```

@@ -1,0 +1,10 @@
+.Rproj.user
+.Rhistory
+.RData
+*.rda
+figure/
+*html
+*.md
+.snakemake*
+*.png
+*.pdf

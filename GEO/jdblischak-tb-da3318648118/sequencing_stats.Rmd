@@ -1,0 +1,217 @@
+Summarizing TB flow cells
+========================================================
+
+John Blischak
+
+Last updated: `r as.character(Sys.Date())`
+
+The analyses below assess the progress of sequencing of the TB samples.
+
+Code version: `r system("git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Data version: `r system("git --git-dir=../data/.git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Generated in this file:
+
+*  Figure S9 - RIN and mapped reads
+
+```{r setup, echo = FALSE}
+source("knitr_options.R")
+opts_chunk$set(echo = FALSE, message = FALSE, fig.width = 8.5)
+```
+
+```{r packages}
+library("plyr")
+library("reshape2")
+library("ggplot2")
+library("pander")
+library("assertive")
+library("gridExtra")
+```
+
+```{r input}
+dat <- read.table("../data/counts_per_run.txt", header = TRUE,
+                  stringsAsFactors = FALSE)
+dat$exon.reads <- rowSums(dat[, grep("ENSG", colnames(dat))])
+```
+
+The data:
+
+```{r view-data, echo = TRUE}
+str(dat[, 1:17])
+```
+
+```{r ggplot-custom-theme}
+theme_custom <- function(base_size = 12) {
+  theme(
+    text = element_text(size = base_size),
+    panel.border = element_rect(color = 'black', fill = NA)
+    )
+}
+theme_base <- theme_set(theme_minimal() + theme_custom(18))
+
+scale_by_num <- function(num, axis, break_freq) {
+  # Scales axis ticks by a given number.
+  # num: the number to multiply the axis tick labels
+  # axis: 'x' or 'y'
+  # break_freq: the frequency of spacing of tick labels,
+  #             must be specified in original scale
+  assert_all_are_true(c(length(axis) == 1,length(num) == 1,
+                        length(break_freq) == 1,
+                        axis %in% c('x', 'y')))
+  labels = function(x) x * num
+  breaks = function(x) {
+    # Input is character vector of length 2 with the 
+    # limits of the axis
+    
+    # This function currently only adds tick labels to
+    # values zero and greater
+    seq(0, x[2], break_freq)
+  }
+  if (axis == 'x') {
+    scale_x_continuous(labels = labels, breaks = breaks)
+  } else {
+    scale_y_continuous(labels = labels, breaks = breaks)
+  }
+}
+```
+
+## Total exonic sequencing output
+
+```{r output-by-flowcell}
+ggplot(dat, aes(x = flow_cell, y = exon.reads)) + geom_boxplot() +
+  labs(title = 'Reads per sample by flow cell',
+       y = 'Exonic reads (x10^6) per sample',
+       x = 'Flow Cell ID') +
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_by_num(1/10^6, 'y', 5*10^6)
+```
+
+```{r total-reads-per-sample}
+dat.by.dir <- ddply(dat, .(dir, extr, rin), summarize, 
+                    exon.reads = sum(exon.reads))
+ggplot(dat.by.dir, aes(x = reorder(dir, exon.reads), y = exon.reads)) + 
+  geom_dotplot(binaxis = 'y', binwidth = 1000000) +
+  geom_hline(aes(yintercept = 25e6)) +
+  labs(title = 'Number of exonic reads per sample',
+       x = 'Samples',
+       y = 'Exonic reads (x10^6)') +
+  theme(axis.text.x = element_blank()) +
+  scale_by_num(1/10^6, 'y', 10*10^6)
+```
+
+`r sum(dat.by.dir$exon.reads > 25e6)` out of `r nrow(dat.by.dir)` samples have over 25 million exonic reads.
+The average per sample is `r mean(dat.by.dir$exon.reads) / 10^6` +/- `r sd(dat.by.dir$exon.reads) / 10^6` million exonic reads (min: `r min(dat.by.dir$exon.reads) / 10^6`; max: `r max(dat.by.dir$exon.reads) / 10^6`).
+
+```{r reads-v-rin}
+qplot(rin, exon.reads, data =  dat.by.dir) +
+  labs(title = 'Number of exonic reads versus RNA quality',
+       x = 'RIN', y = 'Exonic reads (x10^6)') +
+  stat_smooth(method = 'lm') + scale_by_num(1/10^6, 'y', 25*10^6)
+```
+
+p-value for hypothesis that RIN affects the total number of mapped reads:
+`r summary(lm(exon.reads ~ rin, data = dat.by.dir))$coefficients[2, 4]`
+
+```{r reads-per-master-mix}
+dat.by.extr <- ddply(dat, .(extr, master.mix), summarize, 
+                    exon.reads = sum(exon.reads))
+ggplot(dat.by.extr, aes(x = factor(master.mix), y = exon.reads)) + 
+  geom_dotplot(binaxis = 'y', binwidth = 10000000) +
+#   geom_hline(aes(yintercept = 300e6)) +
+  labs(title = 'Number of exonic reads by master mix',
+       x = 'Master mix' , y = 'Exonic reads (x10^6)') +
+  scale_by_num(1/10^6, 'y', 50*10^6)
+```
+
+```{r reads-per-sample, results = 'hide'}
+counts.by.sample <- read.table("../data/counts_per_sample.txt", header = TRUE,
+                               stringsAsFactors = FALSE)
+str(counts.by.sample[, 1:20])
+# There should be 156 samples
+assert_all_are_true(nrow(counts.by.sample) <= 156)
+```
+
+## Assessing the number of exonic reads 
+
+```{r histogram-of-exonic-read-counts}
+# Add new column which is number of reads that map to exons.
+counts.by.sample$exon.reads <- rowSums(counts.by.sample[, 
+                                      grep("ENSG", colnames(counts.by.sample))])
+ggplot(counts.by.sample, aes(x = exon.reads)) + 
+  geom_histogram(binwidth = 10^6) +
+  labs(title = 'Distribution of exonic read counts across the 156 samples',
+       x = 'Number of exonic reads (x10^6)', y = 'Number of samples') +
+  scale_by_num(1/10^6, 'x', 5*10^6)
+```
+
+## Tabulating samples
+
+Each bacteria-time combination can have up to six individual samples, save
+the Staph-48 hr timepoint because all the cells were dead.
+
+```{r individuals-per-bact-time, results = 'asis'}
+sample.counts <- table(counts.by.sample$bact, counts.by.sample$time)
+pandoc.table(sample.counts, style = 'rmarkdown')
+```
+
+## Checking for bias due to read depth or RNA quality
+
+```{r checking-for-bias-across-factors}
+counts.by.sample$time <- factor(counts.by.sample$time, ordered = TRUE,
+                               levels = c(4, 18, 48))
+counts.by.sample$bact <- factor(counts.by.sample$bact,
+                                levels = c("none", "Rv", "Rv+", "GC", "BCG", "Smeg", "Yers",
+                                           "Salm", "Staph"))
+plot_list <- list()
+for (x in c("ind", "bact", "time")) {
+  for (y in c("exon.reads", "rin")) {
+    fstat <- summary(lm(paste(y, x, sep = '~'),
+                        data = counts.by.sample))$fstatistic
+    pval <- 1 - pf(fstat[['value']], fstat[['numdf']], fstat[['dendf']])
+    ggplot(counts.by.sample, aes_string(x = x, y = y)) +
+      geom_boxplot() + labs(title = sprintf('p-value: %.3f', pval))
+    print(last_plot())
+    plot_list[[paste(x, y, sep = ".")]] <- last_plot()
+  }
+}
+```
+
+### Figure S9
+
+Demonstrate that RIN and number of mapped reads evenly distributed across infection and timepoint.
+Only bias is in RIN score across individuals.
+
+```{r}
+# Annotate plots nicely for use in supplemental information
+pdf("../figs/fig-S09-rin-and-reads.pdf", width = 8, height = 10,
+    useDingbats = FALSE)
+grid.arrange(
+  plot_list[["bact.exon.reads"]] +
+    labs(x = "Bacterial Infection", y = "Number of exonic reads (x10^6)") +
+    scale_by_num(1/10^6, 'y', 25*10^6) +
+    theme(text = element_text(size = 12)),
+  plot_list[["bact.rin"]] +
+    labs(x = "Bacterial Infection", y = "RIN") +
+    theme(text = element_text(size = 12)),
+  plot_list[["time.exon.reads"]] +
+    labs(x = "Time", y = "Number of exonic reads (x10^6)") +
+    scale_by_num(1/10^6, 'y', 25*10^6) +
+    theme(text = element_text(size = 12)),
+  plot_list[["time.rin"]] +
+    labs(x = "Time", y = "RIN") +
+    theme(text = element_text(size = 12)),
+  plot_list[["ind.exon.reads"]] +
+    labs(x = "Individual", y = "Number of exonic reads (x10^6)") +
+    scale_by_num(1/10^6, 'y', 25*10^6) +
+    theme(text = element_text(size = 12)),
+  plot_list[["ind.rin"]] +
+    labs(x = "Individual", y = "RIN") +
+    theme(text = element_text(size = 12)),
+  nrow = 3)
+dev.off()
+```
+
+```{r info}
+sessionInfo()
+```

@@ -1,0 +1,363 @@
+Data from Tailleux et al., 2008
+========================================================
+
+Last updated: `r as.character(Sys.Date())`
+
+Code version: `r system("git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Data version: `r system("git --git-dir=../data/.git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+```{r setup, echo = FALSE}
+source("knitr_options.R")
+opts_chunk$set(message = FALSE, fig.width = 10, fig.height = 8)
+```
+
+[Tailleux et al., 2008][Tailleux2008] studied the transcriptional response to MTB infection in human macrophages and dendritic cells.
+Transcriptome data was also collected from MTB.
+The human data was deposited in the GENOPOLIS databases (www.genopolis.it), but this resource no longer exists.
+Ludovic had given me the data.
+It contains a file with the normalized data, `exprSetSnorm.txt`, a report from the [AMDA][] software, `report.pdf`, and a bunch of other files that I do not use below.
+
+In this analysis, I perform the following:
+
+*  Confirm that the data is normalized
+*  Filter the genes based on expression level
+*  Perform PCA
+
+[Tailleux2008]: http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0001403
+[AMDA]: http://www.biomedcentral.com/1471-2105/7/335
+
+## Setup
+
+```{r packages}
+library("ggplot2")
+theme_set(theme_bw(base_size = 16))
+library("gridExtra")
+library("biomaRt")
+library("dplyr")
+```
+
+Input the data.
+
+```{r data}
+exp_norm <- read.table("../data/exprSetSnorm.txt", header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+stopifnot(ncol(exp_norm) == 72)
+exp_norm[1:10, 1:5]
+```
+
+Log2 transform the data.
+
+```{r log2}
+exp_norm <- log2(exp_norm)
+```
+
+There are `r ncol(exp_norm)` samples:
+9 donors x 2 cell types x 4 time points.
+
+Update the sample names to follow the naming convention I use.
+
+```{r update-names}
+samples <- colnames(exp_norm)
+cell_type <- substr(samples, 1, 1)
+time <- substr(samples, 2, 3)
+time <- sub("h", "", time)
+time <- as.numeric(time)
+ind <- strsplit(samples, "h")
+ind <- sapply(ind, function(x) x[2])
+ind <- as.numeric(ind)
+table(cell_type, time)
+bact <- ifelse(time == 0, "none", "Rv")
+colnames(exp_norm) <- sprintf("%s%03d.%s.%d", cell_type, ind, bact, time)
+```
+
+Also create an annotation table.
+
+```{r anno-table}
+anno_array <- data.frame(ind, bact, time = time, cell_type,
+                         stringsAsFactors = FALSE)
+head(anno_array)
+```
+
+## Visualize distributions
+
+The data do appear to already be normalized.
+
+```{r per-array-boxplot, fig.width = 10}
+boxplot(exp_norm, las = 3)
+```
+
+## Filter genes
+
+As expected from [Tailleux et al., 2008][Tailleux2008], the file contains data for `r nrow(exp_norm)` Affy probes.
+
+> Comprehensive gene expression profiles of 9 independent healthy donors were generated with high-density oligonucleotide human arrays with 22,283 probe sets, which in total interrogated the expression levels of approximately 18,400 transcripts and variants, including 14,500 well-characterized human genes.
+
+```{r count-probes}
+nrow(exp_norm)
+head(rownames(exp_norm))
+```
+
+However, these were filtered to just 11,262.
+
+> Using unsupervised hierarchical cluster analysis with 11,262 probe sets we identified the differences in gene expression between DCs and Mφs, which readily distinguished the two groups.
+
+The AMDA report explains that it uses the Affy "Present" and "Absent" statistics to obtain the final 11,262 probes.
+Since `exprSetSnorm.txt` no longer contains this information, I'll simply take the 11,262 probes with the highest expression level.
+
+```{r filter}
+exp_norm_mean <- apply(exp_norm, 1, mean)
+stopifnot(sum(is.na(exp_norm_mean)) == 0)
+exp_norm_filter <- exp_norm[order(exp_norm_mean, decreasing = TRUE)[1:11262], ]
+stopifnot(nrow(exp_norm_filter) == 11262,
+          colMeans(exp_norm_filter) > colMeans(exp_norm))
+```
+
+As expected, this increased the average expression for the arrays.
+
+```{r per-array-boxplot-filtered, fig.width = 10}
+boxplot(exp_norm_filter, las = 3)
+```
+
+## PCA
+
+Perform principal components analysis on the filtered data.
+
+```{r run-pca}
+pca <- prcomp(x = t(exp_norm_filter), retx = TRUE, center = TRUE, scale. = TRUE)
+```
+
+Combine PCA results with annotation.
+
+```{r labels}
+pca_dat <- data.frame(PC1 = pca$x[, 1], PC2 = pca$x[, 2], anno_array,
+                      stringsAsFactors = FALSE)
+```
+
+Calculate the variance explained.
+
+```{r variance-explained}
+variances <- pca$sdev^2
+explained <- variances / sum(variances)
+```
+
+Plot the first two PCs with the points labeled by cell type and time point.
+
+```{r plot-pca}
+pca_plot <- ggplot(pca_dat, aes(x = PC1, y = PC2, col = as.factor(time),
+                                shape = cell_type)) +
+  geom_point() +
+  labs(x = sprintf("PC1 (%.2f%%)", round(explained[1] * 100, 2)),
+       y = sprintf("PC2 (%.2f%%)", round(explained[2] * 100, 2)))
+pca_plot
+```
+
+The first PC divides the samples by cell type.
+The second PC divides the samples by time post-infection.
+
+## Convert gene IDs
+
+Convert Affy probe IDs to Ensembl gene IDs.
+The array was the Affymetrix Human U133A.
+
+> Labelling of samples and hybridisation to the Human U133A oligonucleotide microarray chips (Affymetrix, Santa Clara, CA) containing 22,283 probe sets were performed according to the manufacturer's protocols.
+
+Set up the connection to Ensembl Biomart.
+
+```{r setup-biomaRt}
+ensembl <- useMart(host = "sep2013.archive.ensembl.org",
+                   biomart = "ENSEMBL_MART_ENSEMBL",
+                   dataset = "hsapiens_gene_ensembl")
+# attributePages(ensembl)
+# atts <- listAttributes(ensembl, page = "feature_page")
+# atts[grep("Affy", atts$description), ]
+# filts <- listFilters(ensembl)
+# filts[grep("u133a", filts$description), ]
+```
+
+Convert the Affy probe IDs to Ensembl gene names.
+
+```{r get-ens-names}
+ens_names <- getBM(attributes = c("ensembl_gene_id", "external_gene_id",
+                                  "affy_hg_u133a"),
+                   filters = "affy_hg_u133a",
+                   values = rownames(exp_norm_filter),
+                   mart = ensembl)
+head(ens_names)
+```
+
+Merge the Ensembl gene names into the expression matrix.
+
+```{r merge}
+exp_norm_ens <- merge(exp_norm_filter, ens_names, by.x = "row.names", by.y = "affy_hg_u133a",
+                      all.x = TRUE)
+dim(exp_norm_ens)
+```
+
+There are probes which have no Ensembl ID.
+
+```{r no-ens-id}
+no_ens_id <- is.na(exp_norm_ens$ensembl_gene_id)
+sum(no_ens_id)
+head(exp_norm_ens[no_ens_id, c(1:3, 73:75)])
+```
+
+Remove them.
+
+```{r remove-na-id}
+exp_norm_ens <- exp_norm_ens[!no_ens_id, ]
+```
+
+There are also be probes that target the same gene.
+
+```{r duplicate-probes}
+multi_probes <- duplicated(exp_norm_ens$ensembl_gene_id)
+sum(multi_probes)
+```
+
+Take the mean expression across the probes for each gene.
+
+```{r mean-exp}
+exp_norm_mean <- exp_norm_ens %>%
+  group_by(ensembl_gene_id, external_gene_id) %>%
+  summarise_each(funs(mean), -Row.names) %>%
+  arrange(ensembl_gene_id, external_gene_id)
+head(exp_norm_mean)
+```
+
+Confirm that this worked as expected.
+
+```{r confirm-summary}
+ex_multi_gene <- exp_norm_ens[which(multi_probes)[1], "ensembl_gene_id"]
+exp_norm_ens %>% filter(ensembl_gene_id == ex_multi_gene) %>%
+  select(-starts_with("D", ignore.case = FALSE))
+stopifnot(exp_norm_mean[exp_norm_mean$ensembl_gene_id == ex_multi_gene, "M001.none.0"] ==
+          mean(exp_norm_ens[exp_norm_ens$ensembl_gene_id == ex_multi_gene, "M001.none.0"]))
+```
+
+There are no more duplicated probes.
+
+```{r no-dups}
+stopifnot(sum(duplicated(exp_norm_mean$ensembl_gene_id)) == 0)
+```
+
+## Merge the two data sets
+
+```{r input-counts}
+dat_cpm <- read.table("../data/table-s1.txt", header = TRUE, sep = "\t",
+                      stringsAsFactors = FALSE)
+# Fix Rv+
+colnames(dat_cpm) <- gsub("\\.\\.", "\\+\\.", colnames(dat_cpm))
+dim(dat_cpm)
+```
+
+Merge on the Ensembl gene names.
+
+```{r merge-two-data-sets}
+dat_merged <- merge(exp_norm_mean, dat_cpm, by.x = "ensembl_gene_id", by.y = "id")
+dim(dat_merged)
+```
+
+Confirm that gene names match from both data sets.
+
+```{r check-gene-names}
+stopifnot(dat_merged$external_gene_id == dat_merged$name)
+```
+
+There are `r nrow(dat_merged)` genes that are able to be compared between the two experiments.
+
+Clean up the expression data to only contain data on macrophages infected with MTB.
+
+```{r clean}
+dat_mac <- dat_merged
+rownames(dat_mac) <- dat_mac$ensembl_gene_id
+dat_mac <- dat_mac %>%
+  select(which(grepl("Rv\\.", colnames(dat_mac)) | grepl("none", colnames(dat_mac)))) %>%
+  select(starts_with("M", ignore.case = FALSE))
+dim(dat_mac)
+```
+
+Load the annotation data from the RNA-seq study and select only the MTB infection data.
+
+```{r input-metadata}
+anno_seq <- read.table("../data/annotation.txt", header = TRUE,
+                       stringsAsFactors = FALSE)
+anno_seq <- filter(anno_seq, bact %in% c("Rv", "none"))
+```
+
+Combine the annotations.
+
+```{r combine-anno}
+anno_seq$study <- "blischak2015"
+anno_array$study <- "tailleux2008"
+anno <- rbind(anno_array[anno_array$cell_type == "M",
+                         c("ind", "bact", "time", "study")],
+              anno_seq[, c("ind", "bact", "time", "study")])
+stopifnot(anno$bact %in% c("Rv", "none"),
+          nrow(anno) == ncol(dat_mac))
+head(anno)
+```
+
+## PCA to compare studies
+
+Run PCA on the merged macrophage data.
+
+```{r run-pca-macrophage}
+pca_mac <- prcomp(x = t(dat_mac), retx = TRUE, center = TRUE, scale. = TRUE)
+```
+
+```{r labels-mac}
+pca_mac_dat <- data.frame(pca_mac$x, anno, stringsAsFactors = FALSE)
+```
+
+```{r variance-explained-mac}
+variances_mac <- pca_mac$sdev^2
+explained_mac <- variances_mac / sum(variances_mac)
+```
+
+Plotting the first two PCs identifies the expected batch effect.
+
+```{r plot-pca-mac-batch}
+pca_mac_batch <- ggplot(pca_mac_dat, aes(x = PC1, y = PC2, col = bact,
+                                         shape = study)) +
+  geom_point() +
+  geom_text(aes(label = time), hjust = -.5, vjust = 0, size = 3) +
+  labs(title = "Batch effect between studies",
+       x = sprintf("PC1 (%.2f%%)", round(explained_mac[1] * 100, 2)),
+       y = sprintf("PC2 (%.2f%%)", round(explained_mac[2] * 100, 2)))
+pca_mac_batch
+```
+
+Plotting PC2 versus PC3 separates the samples by their treatment.
+
+```{r plot-pca-mac-treatment}
+pca_mac_treat <- pca_mac_batch %+% aes(x = PC2, y = PC3) +
+  labs(title = "Samples separated by treatment",
+       x = sprintf("PC2 (%.2f%%)", round(explained_mac[2] * 100, 2)),
+       y = sprintf("PC3 (%.2f%%)", round(explained_mac[3] * 100, 2)))
+pca_mac_treat
+```
+
+Use a polygon to highlights the samples that demonstrate a strong response to infection.
+
+```{r plot-pca-mac-treatment-poly}
+# coordinates of polygon go counter clockwise starting from bottom left
+polygons <- data.frame(id = "response-to-infection",
+                       x = c(-07, -07, +45, +45),
+                       y = c(-58, +10, +10, -58))
+pca_mac_treat_poly <- pca_mac_treat + geom_polygon(mapping = aes(x = x, y = y, group = id,
+                                           col = NA, shape = NA),
+                             alpha = 0, data = polygons)
+pca_mac_treat_poly
+```
+
+```{r}
+pdf("../figs/fig-S10-tailleux2008.pdf", width = 8, height = 7,
+    useDingbats = FALSE)
+grid.arrange(pca_mac_batch, pca_mac_treat_poly)
+dev.off()
+```
+
+
+```{r info}
+sessionInfo()
+```

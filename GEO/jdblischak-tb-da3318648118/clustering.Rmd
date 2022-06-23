@@ -1,0 +1,304 @@
+Hierarchical clustering
+==========================================================
+
+John Blischak
+
+Last updated: `r as.character(Sys.Date())`
+
+Code version: `r system("git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Data version: `r system("git --git-dir=../data/.git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Heatmaps displaying hierarchical clustering of samples.
+The distance metric is Euclidean distance (the default for `dist`).
+The clustering method is complete linkage (the default for `hclust`).
+
+**Outline:**
+
++ All expressed** genes
+  + Median expression levels for each bacteria:time combination (n = 6)
+  + Per bacterial infection
+  + Per timepoint
+  + Per individual
++ Immune-related genes
+  + Median expression levels for each bacteria:time combination (n = 6)
+  + Per bacterial infection
+  + Per timepoint
+  + Per individual
+  
+** "expressed" genes defined as having greater than one read per million in at least 6 out of the 156 samples
+
+```{r global-chunk-options, echo = FALSE}
+source("knitr_options.R")
+opts_chunk$set(echo = FALSE, warning = FALSE, fig.width = 12, fig.height = 12)
+```
+
+```{r packages, message = FALSE}
+library(ggplot2)
+library(gridExtra)
+library(heatmap.plus)
+library(colorspace)
+library(rols)
+library(biomaRt)
+library(edgeR)
+library(dplyr)
+```
+
+```{r obtain-immune-genes}
+go_im <- olsQuery('immune', 'GO')
+go_im_names <- names(go_im)
+
+ensembl <- useMart('ensembl', dataset = 'hsapiens_gene_ensembl')
+g_im <- getBM(attributes = c('ensembl_gene_id'),
+           filters = c('go_id'),
+           values = list(go_im_names),
+           mart = ensembl)
+```
+
+```{r functions}
+custom_heatmap <- function(mat, dist_metric = "euclidean", ...) {
+  # mat: numeric matrix, row = sample, col = gene
+  # dist_metric: method to use for `dist`
+  # ... additional parameters passed to `heatmap.plus`, e.g. ColSideColors
+  d <- dist(mat, method = dist_metric)
+  heatmap.plus(as.matrix(d), margins = c(10, 10),
+               cexRow = 1.5, cexCol = 1.5, ...)
+}
+```
+
+```{r input-data}
+load("../data/model-fit.rda")
+normalized_lib_size <- fit$samples$lib.size * fit$samples$norm.factors
+dat_cpm <- cpm(fit$counts, lib.size = normalized_lib_size)
+bact_vec <- c("Rv", "GC", "Rv+", "BCG", "Smeg", "Salm", "Yers", "Staph")
+# bact_vec <- c("BCG", "Rv", "Staph")  # for debugging
+anno <- read.table("../data/annotation.txt", header = TRUE,
+                   stringsAsFactors = TRUE)
+# Convert time to a factor
+anno$time <- ordered(anno$time, levels = c(4, 18, 48))
+cpm_per_sample <- cbind(anno, t(dat_cpm))
+# Remove sample number from rownames
+names_split <- strsplit(rownames(cpm_per_sample), "\\.")
+rownames(cpm_per_sample) <- sapply(names_split, function(x)
+                                                paste(x[2:4], collapse = "."))
+```
+
+# Expressed genes
+
+## Median expression levels
+
+```{r medians}
+# Group on multiple variables with unknown names
+group_vars <- c("bact", "time")
+group_vars <- lapply(group_vars, as.symbol)
+cpm_grouped <- regroup(cpm_per_sample, group_vars)
+# Calculate median expression for each of the gene columns
+genes <- grep("ENSG", colnames(cpm_per_sample), value = TRUE)
+dots <- lapply(genes, function(x) substitute(median(x), list(x=as.name(x))))
+cpm_medians <- do.call(summarise, c(list(.data = cpm_grouped), dots))
+# Fix the gene column names
+colnames(cpm_medians)[grep("ENSG", colnames(cpm_medians))] <- genes
+write.table(cpm_medians, file = "../data/median_expression.txt",
+            quote = FALSE, sep = "\t", row.names = FALSE)
+```
+
+```{r median-heatmap}
+genes <- cpm_medians[, grep("ENSG", colnames(cpm_medians))]
+rownames(genes) <- paste(as.character(cpm_medians$bact),
+                         as.character(cpm_medians$time), sep = ".")
+color_bact <- cpm_medians$bact
+levels(color_bact) = rainbow_hcl(length(levels(color_bact)))
+color_time <- cpm_medians$time
+levels(color_time) = c("green", "blue", "purple")
+color_col_median <- matrix(c(as.character(color_time),
+                             as.character(color_bact)), ncol = 2)
+colnames(color_col_median) <- c("time", "bact")
+custom_heatmap(genes, ColSideColors = color_col_median)
+legend("topleft", c(levels(cpm_medians$bact), levels(cpm_medians$time)), 
+       fill = c(levels(color_bact), levels(color_time)),
+       title = "Legend")
+```
+
+---
+
+## Per bacterial infection
+
+```{r bacteria-expr, results = "asis"}
+for (b in bact_vec) {
+  cat("\n\n### ", b, "\n\n")
+  b_sub <- cpm_per_sample[cpm_per_sample$bact %in% c("none", b), ]
+  b_sub <- droplevels(b_sub)
+  b_genes <- b_sub[, grep("ENSG", colnames(b_sub))]
+  # Color factors
+  color_bact <- b_sub$bact
+  if (levels(color_bact)[1] == "none") {
+    levels(color_bact) = c("black", "red")
+  } else {
+    levels(color_bact) = c("red", "black")
+  }
+  color_time <- b_sub$time
+  levels(color_time) = c("green", "blue", "purple")
+  color_ind <- b_sub$ind
+  levels(color_ind) = rainbow_hcl(length(levels(color_ind)))
+  color_col <- matrix(c(as.character(color_ind), as.character(color_time),
+                        as.character(color_bact)), ncol = 3)
+  colnames(color_col) <- c("ind", "time", "bact")
+  custom_heatmap(b_genes, ColSideColors = color_col)
+  legend("topleft",
+         c(levels(b_sub$bact), levels(b_sub$time), levels(b_sub$ind)), 
+         fill = c(levels(color_bact), levels(color_time), levels(color_ind)),
+         title = "Legend")
+}
+```
+
+---
+
+## Per timepoint
+
+```{r time-expr, results = "asis"}
+for (tp in levels(cpm_per_sample$time)) {
+  cat("\n\n### ", tp, "\n\n")
+  tp_sub <- cpm_per_sample[cpm_per_sample$time == tp, ]
+  tp_sub <- droplevels(tp_sub)
+  tp_genes <- tp_sub[, grep("ENSG", colnames(tp_sub))]
+  # Color factors
+  color_bact <- tp_sub$bact
+  levels(color_bact) = rainbow_hcl(length(levels(color_bact)))
+  color_ind <- tp_sub$ind
+  levels(color_ind) = rainbow_hcl(length(levels(color_ind)))
+  color_col <- matrix(c(as.character(color_ind), as.character(color_bact)),
+                      ncol = 2)
+  colnames(color_col) <- c("ind", "bact")
+  custom_heatmap(tp_genes, ColSideColors = color_col)
+  legend("topleft", c(levels(tp_sub$bact), levels(tp_sub$ind)), 
+         fill = c(levels(color_bact), levels(color_ind)),
+         title = "Legend")
+}
+```
+
+---
+
+## Per individual
+
+```{r ind-expr, results = "asis"}
+for (ind in levels(cpm_per_sample$ind)) {
+  cat("\n\n### ", ind, "\n\n")
+  ind_sub <- cpm_per_sample[cpm_per_sample$ind == ind, ]
+  ind_sub <- droplevels(ind_sub)
+  ind_genes <- ind_sub[, grep("ENSG", colnames(ind_sub))]
+  # Color factors
+  color_bact <- ind_sub$bact
+  levels(color_bact) = rainbow_hcl(length(levels(color_bact)))
+  color_time <- ind_sub$time
+  levels(color_time) = c("green", "blue", "purple")
+  color_col <- matrix(c(as.character(color_time), as.character(color_bact)),
+                      ncol = 2)
+  colnames(color_col) <- c("time", "bact")
+  custom_heatmap(ind_genes, ColSideColors = color_col)
+  legend("topleft", c(levels(tp_sub$bact), levels(tp_sub$time)), 
+         fill = c(levels(color_bact), levels(color_time)),
+         title = "Legend")
+}
+```
+
+---
+
+---
+
+# Immune-related genes
+
+## Median expression levels
+
+```{r median-heatmap-immune}
+genes_im <- genes[, colnames(genes) %in% g_im$ensembl_gene_id]
+custom_heatmap(genes_im, ColSideColors = color_col_median)
+legend("topleft", c(levels(cpm_medians$bact), levels(cpm_medians$time)), 
+       fill = c(levels(color_bact), levels(color_time)),
+       title = "Legend")
+```
+
+---
+
+## Per bacterial infection
+
+```{r bacteria-im, results = "asis"}
+for (b in bact_vec) {
+  cat("\n\n### ", b, "\n\n")
+  b_sub <- cpm_per_sample[cpm_per_sample$bact %in% c("none", b), ]
+  b_sub <- droplevels(b_sub)
+  b_genes <- b_sub[, grep("ENSG", colnames(b_sub))]
+  b_genes_im <- b_genes[, colnames(b_genes) %in% g_im$ensembl_gene_id]
+  # Color factors
+  color_bact <- b_sub$bact
+  if (levels(color_bact)[1] == "none") {
+    levels(color_bact) = c("black", "red")
+  } else {
+    levels(color_bact) = c("red", "black")
+  }
+  color_time <- b_sub$time
+  levels(color_time) = c("green", "blue", "purple")
+  color_ind <- b_sub$ind
+  levels(color_ind) = rainbow_hcl(length(levels(color_ind)), c = 150, l = 50)
+  color_col <- matrix(c(as.character(color_ind), as.character(color_time),
+                        as.character(color_bact)), ncol = 3)
+  colnames(color_col) <- c("ind", "time", "bact")
+  custom_heatmap(b_genes_im, ColSideColors = color_col)
+  legend("topleft",
+         c(levels(b_sub$bact), levels(b_sub$time), levels(b_sub$ind)), 
+         fill = c(levels(color_bact), levels(color_time), levels(color_ind)),
+         title = "Legend")
+}
+```
+
+---
+
+## Per timepoint
+
+```{r time-im, results = "asis"}
+for (tp in levels(cpm_per_sample$time)) {
+  cat("\n\n### ", tp, "\n\n")
+  tp_sub <- cpm_per_sample[cpm_per_sample$time == tp, ]
+  tp_sub <- droplevels(tp_sub)
+  tp_genes <- tp_sub[, grep("ENSG", colnames(tp_sub))]
+  tp_genes_im <- tp_genes[, colnames(tp_genes) %in% g_im$ensembl_gene_id]
+  # Color factors
+  color_bact <- tp_sub$bact
+  levels(color_bact) = rainbow_hcl(length(levels(color_bact)))
+  color_ind <- tp_sub$ind
+  levels(color_ind) = rainbow_hcl(length(levels(color_ind)))
+  color_col <- matrix(c(as.character(color_ind), as.character(color_bact)),
+                      ncol = 2)
+  colnames(color_col) <- c("ind", "bact")
+  custom_heatmap(tp_genes_im, ColSideColors = color_col)
+  legend("topleft", c(levels(tp_sub$bact), levels(tp_sub$ind)), 
+         fill = c(levels(color_bact), levels(color_ind)),
+         title = "Legend")
+}
+```
+
+---
+
+## Per individual
+
+```{r ind-im, results = "asis"}
+for (ind in levels(cpm_per_sample$ind)) {
+  cat("\n\n### ", ind, "\n\n")
+  ind_sub <- cpm_per_sample[cpm_per_sample$ind == ind, ]
+  ind_sub <- droplevels(ind_sub)
+  ind_genes <- ind_sub[, grep("ENSG", colnames(ind_sub))]
+  ind_genes_im <- ind_genes[, colnames(ind_genes) %in% g_im$ensembl_gene_id]
+  # Color factors
+  color_bact <- ind_sub$bact
+  levels(color_bact) = rainbow_hcl(length(levels(color_bact)))
+  color_time <- ind_sub$time
+  levels(color_time) = c("green", "blue", "purple")
+  color_col <- matrix(c(as.character(color_time), as.character(color_bact)),
+                      ncol = 2)
+  colnames(color_col) <- c("time", "bact")
+  custom_heatmap(ind_genes_im, ColSideColors = color_col)
+}
+```
+
+```{r info}
+sessionInfo()
+```

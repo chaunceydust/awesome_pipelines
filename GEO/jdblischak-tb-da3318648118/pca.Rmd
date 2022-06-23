@@ -1,0 +1,200 @@
+Principal components analysis
+==========================================================
+
+John Blischak
+
+Last updated: `r as.character(Sys.Date())`
+
+Code version: `r system("git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+Data version: `r system("git --git-dir=../data/.git log -1 --format=oneline | cut -d' ' -f1", intern = TRUE)`
+
+This analysis is divided into three sections:
+
++ PCA for each individual infection, highlighting the main variables of the bacteria, timepoint, and individual.
++ Combined PCA on all 156 samples, highlighting the main variables and also checking for technical biases.
++ Combined PCA on all 804 fastq files, highlighting the main variables and also checking for technical biases.
+
+The PCA code I wrote is based on Zhang et al. 2009 ([PubMed][], [PDF][]).
+
+[PubMed]: https://www.ncbi.nlm.nih.gov/pubmed/?term=19763933
+[PDF]: http://www3.nd.edu/~mpfrende/Ecological%20Genomics/Papers/Microarray%20Workshop/Bioinformatics%20Analysis%20of%20Microarray%20Data.pdf
+
+**Key observations:**
++ PC1 is driven by the RIN score.
++ PC2 is driven by the time point.
+
+```{r global-chunk-options, echo = FALSE}
+source("knitr_options.R")
+opts_chunk$set(echo = FALSE, warning = FALSE)
+```
+
+```{r packages, message = FALSE}
+library(ggplot2)
+library(gridExtra)
+library(edgeR)
+```
+
+```{r ggplot-theme-and-functions}
+theme_set(theme_bw(base_size = 28))
+
+pca_plot <- function(df, col_var = NULL, shape_var = NULL, title = "") {
+  ggplot(df) + geom_point(aes_string(x = "PC1", y = "PC2", color = col_var,
+                                     shape = shape_var), size = 5) +
+   labs(title = title, x = "PC1", y = "PC2")
+}
+
+pca_var_plot <- function(pca) {
+  # x: class == prcomp
+  pca.var <- pca$sdev^2
+  pca.prop <- pca.var / sum(pca.var)
+  var.plot <- qplot(PC, prop, data = data.frame(PC = 1:length(pca.prop),
+                                                prop = pca.prop)) +
+    labs(title = 'Variance contributed by each PC',
+         x = 'PC', y = 'Proportion of variance')
+}
+
+calc_pca <- function(x) {
+  # Performs principal components analysis with prcomp
+  # x: a sample-by-gene numeric matrix
+  prcomp(x, scale. = TRUE, retx = TRUE)
+}
+
+get_regr_pval <- function(mod) {
+  # Returns the p-value for the Fstatistic of a linear model
+  # mod: class lm
+  stopifnot(class(mod) == "lm")
+  fstat <- summary(mod)$fstatistic
+  pval <- 1 - pf(fstat[1], fstat[2], fstat[3])
+  return(pval)
+}
+
+plot_versus_pc <- function(df, pc_num, fac) {
+  # df: data.frame
+  # pc_num: numeric, specific PC for plotting
+  # fac: column name of df for plotting against PC
+  pc_char <- paste0("PC", pc_num)
+  # Calculate F-statistic p-value for linear model
+  pval <- get_regr_pval(lm(df[, pc_char] ~ df[, fac]))
+  if (is.numeric(df[, f])) {
+    ggplot(df, aes_string(x = f, y = pc_char)) + geom_point() +
+      geom_smooth(method = "lm") + labs(title = sprintf("p-val: %.2f", pval))
+  } else {
+    ggplot(df, aes_string(x = f, y = pc_char)) + geom_boxplot() +
+      labs(title = sprintf("p-val: %.2f", pval))
+  }
+}
+```
+
+```{r input-data, message = FALSE}
+load("../data/model-fit.rda")
+normalized_lib_size <- fit$samples$lib.size * fit$samples$norm.factors
+dat_cpm <- cpm(fit$counts, lib.size = normalized_lib_size)
+bact_vec <- c("Rv", "GC", "Rv+", "BCG", "Smeg", "Salm", "Yers", "Staph")
+# bact_vec <- c("BCG", "Rv", "Staph")  # for debugging
+anno <- read.table("../data/annotation.txt", header = TRUE,
+                   stringsAsFactors = TRUE)
+# Convert time to a factor
+anno$time <- ordered(anno$time, levels = c(4, 18, 48))
+anno$extr <- ordered(anno$extr, levels = 1:13)
+anno$index <- ordered(anno$index, levels = c(2, 4:7, 12:16, 18:19))
+anno$master.mix <- ordered(anno$master.mix, levels = 1:13)
+cpm_per_sample <- cbind(anno, t(dat_cpm))
+```
+
+# PCA for each individual infection
+
+```{r per-infection, fig.width = 12, fig.height = 12, results = "asis"}
+for (b in bact_vec) {
+  dat <- dat_cpm[, anno$bact %in% c("none", b)]
+  cat("\n\n### ", b, "\n\n")
+  # PCA
+  pca <- calc_pca(t(dat))$x
+  pca <- data.frame(anno[anno$bact %in% c("none", b), c("bact", "time", "ind")],
+                    pca)
+  pca <- droplevels(pca)
+  for (cat_var in c("bact", "time", "ind")) {
+    assign(paste0(cat_var, "_pca"), 
+           arrangeGrob(pca_plot(pca, cat_var)))
+  }
+  bact_time_pca <- pca_plot(pca, "bact", "time")
+  grid.arrange(bact_pca, time_pca, ind_pca, bact_time_pca, nrow = 2)
+}
+```
+
+---
+
+# PCA of all 156 samples
+
+```{r all-samples, fig.width = 12}
+pca_all <- calc_pca(t(dat_cpm))
+pca_all_anno <- data.frame(anno, pca_all$x)
+pca_all_anno$infected <- ifelse(pca_all_anno$bact != "none", "infected",
+                                "control")
+pca_all_anno$infected <- ordered(pca_all_anno$infected, levels = c("infected",
+                                                                   "control"))
+
+# Plot variance contributed by each PC
+print(pca_var_plot(pca_all))
+
+facs <- c("ind", "bact", "time", "extr", "rin", "mol", "index", "master.mix")
+names(facs) <- c("Individual", "Bacteria", "Timepoint", "Extraction group",
+                 "RNA Integrity Number", "Library concentration (nmol/L)",
+                 "Illumina index for multiplexing", "Sequencing master mix")
+
+for (f in facs) {
+  # PC1 v PC2
+  pca_plot(pca_all_anno, col_var = f, shape_var = "infected",
+                        title = names(facs)[which(facs == f)])
+  print(last_plot())
+
+  # Plot f versus PC1 and PC2
+  f_v_pc1 <- arrangeGrob(plot_versus_pc(pca_all_anno, 1, f))
+  f_v_pc2 <- arrangeGrob(plot_versus_pc(pca_all_anno, 2, f))
+  grid.arrange(f_v_pc1, f_v_pc2, ncol = 2)
+}
+```
+
+---
+
+## PCA of all 804 fastq files
+
+```{r input-and-pca}
+counts_per_run <- read.table("../data/counts_per_run.txt", header = TRUE,
+                             stringsAsFactors = FALSE)
+counts_per_run$time <- ordered(counts_per_run$time, levels = c(4, 18, 48))
+counts_per_run$extr <- ordered(counts_per_run$extr, levels = 1:13)
+counts_per_run$index <- ordered(counts_per_run$index,
+                                levels = c(2, 4:7, 12:16, 18:19))
+counts_per_run$master.mix <- ordered(counts_per_run$master.mix, levels = 1:13)
+cpm_per_run <- cpm(t(counts_per_run[, grep("ENSG", colnames(counts_per_run))]))
+# Only keep genes with greater than 1 read per million in greater than 6 fastq
+cpm_per_run <- cpm_per_run[rowSums(cpm_per_run > 1) > 6, ]
+pca_fastq <- calc_pca(t(cpm_per_run))
+pca_fastq_anno <- data.frame(
+  counts_per_run[, grep("ENSG", colnames(counts_per_run), invert = TRUE)],
+  pca_fastq$x)
+```
+
+```{r all-fastq, fig.width = 12}
+# Plot variance contributed by each PC
+print(pca_var_plot(pca_fastq))
+
+for (f in facs) {
+  # PC1 v PC2
+  pca_plot(pca_fastq_anno, col_var = f,
+                        title = names(facs)[which(facs == f)])
+  print(last_plot())
+
+  # Plot f versus PC1 and PC2
+  plot_versus_pc(pca_fastq_anno, 1, f)
+  f_v_pc1 <- arrangeGrob(last_plot())
+  plot_versus_pc(pca_fastq_anno, 2, f)
+  f_v_pc2 <- arrangeGrob(last_plot())
+  grid.arrange(f_v_pc1, f_v_pc2, ncol = 2)
+}
+```
+
+```{r info}
+sessionInfo()
+```
