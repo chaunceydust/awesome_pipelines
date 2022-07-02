@@ -1,0 +1,44 @@
+name: alphafold_docker
+channels:
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/pytorch/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/menpo/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/msys2/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/bioconda/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/r/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/cloud/conda-forge/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/
+  - https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/free/
+  - bioconda
+  - conda-forge
+  - defaults
+dependencies:
+  - _libgcc_mutex=0.1=main
+  - _openmp_mutex=4.5=1_gnu
+  - ca-certificates=2021.10.26=h06a4308_2
+  - certifi=2021.10.8=py38h06a4308_2
+  - libedit=3.1.20210910=h7f8727e_0
+  - libffi=3.2.1=hf484d3e_1007
+  - libgcc-ng=9.3.0=h5101ec6_17
+  - libgomp=9.3.0=h5101ec6_17
+  - libstdcxx-ng=9.3.0=hd4cf53a_17
+  - ncurses=6.3=h7f8727e_2
+  - openssl=1.1.1m=h7f8727e_0
+  - pip=21.2.4=py38h06a4308_0
+  - python=3.8.0=h0371630_2
+  - readline=7.0=h7b6447c_5
+  - setuptools=58.0.4=py38h06a4308_0
+  - sqlite=3.33.0=h62c20be_0
+  - tk=8.6.11=h1ccaba5_0
+  - wheel=0.37.1=pyhd3eb1b0_0
+  - xz=5.2.5=h7b6447c_0
+  - zlib=1.2.11=h7f8727e_4
+  - pip:
+    - absl-py==0.13.0
+    - charset-normalizer==2.0.10
+    - docker==5.0.0
+    - idna==3.3
+    - requests==2.27.1
+    - six==1.16.0
+    - urllib3==1.26.8
+    - websocket-client==1.2.3
+prefix: /home/nvme0/miniconda3/envs/alphafold_docker
