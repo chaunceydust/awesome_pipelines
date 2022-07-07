@@ -26,4 +26,7 @@ if [ 1 == 2 ]; then
     seqkit grep -f besthit_gene.list $TOTAL_Pep_seq > besthit_gene_total.fa
 
     seqkit rmdup -s -D seqkit.dup.record.log -d besthit_gene_dup.fa -o besthit_gene_uni.fa besthit_gene_total.fa
+
+    perl extract_seqkit_info.pl seqkit.dup.record.log besthit_gene_uni.fa
+    #### result ID mapping file: HMP_bsethit_seqkit_id_mapping.info
 fi
