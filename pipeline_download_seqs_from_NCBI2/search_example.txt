@@ -1,0 +1,30 @@
+>F-atpase
+(F-ATPase[All Fields] AND (bacteria[filter] AND refseq[filter])) 
+>mub
+(mucus-binding protein[Protein Name] AND bacteria[filter] NOT partial Not plasmid 
+>elongation factor tu
+(elongation factor tu[Protein Name] AND bacteria[filter] NOT partial[All Fields] NOT ("unidentified plasmid"[Organism] OR ("unidentified plasmid"[Organism] OR plasmid[All Fields])) AND refseq[filter] NOT hypothetical[All Fields] 
+>HK(2CRs)
+Sensor histidine kinase[Protein Name] AND (bacteria[filter] AND refseq[filter]) NOT hypothetical[All Fields] NOT partial NOT plasmid 
+>RR(2CRs)
+DNA-binding response regulator[Protein Name] AND (bacteria[filter] AND refseq[filter]) NOT hypothetical[All Fields] NOT partial NOT plasmid 
+
+>Urease subunit alpha (19059)-20210114
+Urease subunit alpha[Protein Name] AND (bacteria[filter] AND refseq[filter]) NOT partial[All Fields] NOT ("unidentified plasmid"[Organism] OR ("unidentified plasmid"[Organism] OR ("unidentified plasmid"[Organism] OR plasmid[All Fields])))
+
+>Glycine betaine transporter BetL (838)-20210114
+Glycine betaine transporter BetL[Protein Name] AND bacteria[filter]
+
+>Glutamate/gamma-aminobutyrate antiporter (1630)-20210118
+Glutamate/gamma-aminobutyrate antiporter[Protein Name] NOT partial[All Fields] NOT ("unidentified plasmid"[Organism] OR plasmid[All Fields])
+
+>glutamate decarboxylase (7481)-20210118
+4.1.1.15[EC/RN Number] AND refseq[filter] NOT partial NOT plasmid 
+
+>BSH （2343）-20210223
+3.5.1.24[EC/RN Number] AND refseq[filter] NOT partial NOT plasmid 
+
+
+
+
+
