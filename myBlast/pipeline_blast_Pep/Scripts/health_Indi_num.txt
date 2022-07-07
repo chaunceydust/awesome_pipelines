@@ -1,0 +1,12 @@
+PopNum	Pop	rank
+27	HZ	1
+111	CN	2
+104	JP	2
+35	KR	2
+48	DK	2
+36	SE	3
+41	AT	3
+55	FR	3
+25	AU	4
+148	US	5
+31	PE	6
