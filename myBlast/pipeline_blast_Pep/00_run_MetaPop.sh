@@ -7,6 +7,7 @@ fi
 
 WD=$(dirname $PWD)
 QueryPath=/project/Pep-Seq
+MAPfile="/project/XF/01test/AMP7_HMP_blast/pipeline_blast/HMP_bsethit_seqkit_id_mapping.info"
 
 dbSeqsList="database.list"
 #### copy Subject Sequences(database)
@@ -26,5 +27,15 @@ do
 
     [ ! -d $WD/${Pop} ] && mkdir -p $WD/${Pop}
     bash 00_run_all.sh -d ../database.list -q ./query_${Pop}.list -p $Pop -j 40 -s 5
+
+    [ ! -d $WD/${Pop}/05_unfold_result ] && mkdir -p $WD/${Pop}/05_unfold_result
+    for myfile in $WD/${Pop}/04_Annotation/*_relAbun.tsv
+    do
+      echo $myfile;
+      OutputFile="$WD/${Pop}/05_unfold_result/$(basename $myfile .tsv)_unfold.tsv"
+      echo $OutputFile
+      perl unfold_MetaPop_result.pl $MAPfile $myfile $OutputFile
+    done
+    
 done
 

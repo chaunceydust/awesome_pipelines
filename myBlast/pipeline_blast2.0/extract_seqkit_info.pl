@@ -16,13 +16,14 @@ print Out "formatID\treferenceID\toriID\n";
 my @refid = ();
 while(<RefID>) {
   chomp;
-  if(/^>(\S+)/){
+  if(/^>(gene_id\S+)/){
     push @refid, $1;
   }
 }
 my %hash_ref = map{$_=>1} @refid;
 
 my $flag = 1;
+my @dupid = ();
 while(<In>) {
   chomp;
 
@@ -79,6 +80,29 @@ while(<In>) {
 
   foreach my $oriid (@temp2) {
     print Out "hitsID".$formID."\t".$isect[0]."\t".$oriid."\n";
+    push @dupid, $oriid;
   }
 
+}
+
+
+my @union = ();
+my @diff = ();
+my @isect = ();
+my @uniid = ();
+my (%union, %isect);
+foreach my $e(@refid, @dupid){
+  $union{$e}++ && $isect{$e}++;
+}
+@union=keys %union;
+@isect=keys %isect;
+@diff=grep {$union{$_}==1;} @union;
+@uniid=grep {$union{$_}==1;} @refid;
+
+foreach my $uni (@uniid) {
+  my $ID = "00000000000000000".$flag++;
+  my $formID = substr($ID, -7, 7);
+
+  print Out "hitsID".$formID."\t".$uni."\t".$uni."\n";
+  print "hitsID".$formID."\t".$uni."\n";
 }
