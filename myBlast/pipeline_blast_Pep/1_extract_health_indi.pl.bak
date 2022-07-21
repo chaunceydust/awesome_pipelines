@@ -1,24 +1,7 @@
 #!/usr/bin/perl
 use strict;
-use Getopt::Long;
 
-my $usage = <<USAGE;
-Usage:
-    perl $0 --health_indi_list \$WD/pipeline_blast_Pep/Pop_health_indi.tab
-
-    --health_indi_list <string>    default: \$WD/pipeline_blast_Pep/Pop_health_indi.tab
-
-USAGE
-
-if (@ARGV==0){die $usage}
-
-my ($HealthyIndiList);
-GetOptions(
-    "health_indi_list:s" => \$HealthyIndiList,
-);
-die "--health_indi_list should be set! \n" unless $HealthyIndiList;
-
-open Ref,'<',$HealthyIndiList or die "Can not open file $HealthyIndiList \n";
+open Ref,'<','/project/zhouxingchen/AMP_deeplearning/Pop/pipeline_blast_Pep/Pop_health_indi.tab';
 my %Hits;
 my $id;
 while(<Ref>)

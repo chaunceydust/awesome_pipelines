@@ -25,7 +25,7 @@ die "--outputPrefix should be set! \n" unless $LengthCutoffPrefix;
 my @Lengths=(50, 30, 80, 90, 95, 100);
 for my $length(@Lengths){
 	
-	open In,'<',$AnnotatedResult or die "Can not open file $AnnotatedResult\n";;	
+	open In,'<',$AnnotatedResult or die "Can not open file $AnnotatedResult\n";
 	open Out,">",$LengthCutoffPrefix.$length.".tsv";
 		
 	while(<In>) {
