@@ -48,12 +48,12 @@ do
   done
 
   cd ../
-  : > 12Population_abun_taxa.txt
+  : > ${myCutoff}_12Population_abun_taxa.txt
   
-  head -1 AT*.tsv > 12Population_abun_taxa.txt
+  head -1 AT*.tsv > ${myCutoff}_12Population_abun_taxa.txt
   for x in `ls *_relAbun_unfold.tsv`;
   do
-    tail -n +2 $x >> 12Population_abun_taxa.txt
+    tail -n +2 $x >> ${myCutoff}_12Population_abun_taxa.txt
   done
 
 done
