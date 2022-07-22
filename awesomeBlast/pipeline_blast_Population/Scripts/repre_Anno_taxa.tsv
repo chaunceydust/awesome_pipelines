@@ -1,0 +1,22 @@
+Repre_Gene_ID	Gene_ID	BestHit	Type	Phylum	Class	Order	Family	Genus	Species	Strain	Description	Evalue	QueryLength	HitLength	HSPlength	PercentIdentity
+gene_id_145118	gene_id_3514392	c_AMP593	Top11_c_AMPs	Actinobacteria	Actinobacteria	Actinomycetales	Actinomycetaceae	Actinomyces	Actinomyces urogenitalis	Actinomyces urogenitalis DSM 15434	Full_name	4e-18	32	35	32	96.88
+gene_id_364628	gene_id_364628	c_AMP593	Top11_c_AMPs	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Micrococcus	Micrococcus luteus	Micrococcus luteus NCTC 2665	Full_name	2e-15	29	35	29	96.55
+gene_id_145118	gene_id_3985060	c_AMP593	Top11_c_AMPs	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia	Rothia mucilaginosa	Rothia mucilaginosa ATCC 25296	Full_name	4e-18	32	35	32	96.88
+gene_id_145118	gene_id_410475	c_AMP593	Top11_c_AMPs	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Kocuria	Kocuria rhizophila	Kocuria rhizophila DC2201	Full_name	4e-18	32	35	32	96.88
+gene_id_419674	gene_id_419674	c_AMP593	Top11_c_AMPs	Actinobacteria	Actinobacteria	Micrococcales	Beutenbergiaceae	Beutenbergia	Beutenbergia cavernae	Beutenbergia cavernae DSM 12333	Full_name	7e-18	32	35	32	96.88
+gene_id_364628	gene_id_4278947	c_AMP593	Top11_c_AMPs	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Micrococcus	Micrococcus luteus	Micrococcus luteus SK58	Full_name	2e-15	29	35	29	96.55
+gene_id_145118	gene_id_4510940	c_AMP593	Top11_c_AMPs	Actinobacteria	Actinobacteria	Micrococcales	Brevibacteriaceae	Brevibacterium	Brevibacterium mcbrellneri	Brevibacterium mcbrellneri ATCC 49030	Full_name	4e-18	32	35	32	96.88
+gene_id_1305303	gene_id_4864517	c_AMP593	Top11_c_AMPs	Actinobacteria	Actinobacteria	Actinomycetales	Actinomycetaceae	Actinomyces	Actinomyces odontolyticus	Actinomyces odontolyticus F0309	Full_name	2e-18	32	35	32	100
+gene_id_2640468	gene_id_5036311	c_AMP1043	Top11_c_AMPs	Bacteroidetes	Bacteroidia	Bacteroidales	Bacteroidaceae	Bacteroides	Bacteroides sp. 3_1_23	Bacteroides sp. 3_1_23	Full_name	6e-20	42	35	34	94.12
+gene_id_1305303	gene_id_5532031	c_AMP593	Top11_c_AMPs	Actinobacteria	Actinobacteria	Micrococcales	Cellulomonadaceae	Cellulomonas	Cellulomonas flavigena	Cellulomonas flavigena DSM 20109	Full_name	2e-18	32	35	32	100
+gene_id_145118	gene_id_5667314	c_AMP593	Top11_c_AMPs	Actinobacteria	Actinobacteria	Micrococcales	Micrococcaceae	Rothia	Rothia mucilaginosa	Rothia mucilaginosa DY-18	Full_name	4e-18	32	35	32	96.88
+gene_id_1305303	gene_id_5761581	c_AMP593	Top11_c_AMPs	Actinobacteria	Actinobacteria	Micrococcales	Promicromonosporaceae	Xylanimonas	Xylanimonas cellulosilytica	Xylanimonas cellulosilytica DSM 15894	Full_name	2e-18	32	35	32	100
+gene_id_1305303	gene_id_5765211	c_AMP593	Top11_c_AMPs	Actinobacteria	Actinobacteria	Micrococcales	Sanguibacteraceae	Sanguibacter	Sanguibacter keddieii	Sanguibacter keddieii DSM 10542	Full_name	2e-18	32	35	32	100
+gene_id_1305303	gene_id_6969445	c_AMP593	Top11_c_AMPs	unclassified	unclassified	unclassified	unclassified	unclassified	unclassified	unclassified	Full_name	2e-18	32	35	32	100
+gene_id_1305303	gene_id_1305303	c_AMP593	Top11_c_AMPs	Actinobacteria	Actinobacteria	Micrococcales	Microbacteriaceae	Clavibacter	Clavibacter michiganensis	Clavibacter michiganensis subsp. michiganensis NCPPB 382	Full_name	2e-18	32	35	32	100
+gene_id_138896	gene_id_138896	c_AMP593	Top11_c_AMPs	Actinobacteria	Actinobacteria	Micrococcales	Dermabacteraceae	Brachybacterium	Brachybacterium faecium	Brachybacterium faecium DSM 4810	Full_name	8e-6	32	35	32	93.75
+gene_id_145118	gene_id_145118	c_AMP593	Top11_c_AMPs	Actinobacteria	Actinobacteria	Micrococcales	Dermacoccaceae	Kytococcus	Kytococcus sedentarius	Kytococcus sedentarius DSM 20547	Full_name	4e-18	32	35	32	96.88
+gene_id_419674	gene_id_1641324	c_AMP593	Top11_c_AMPs	Actinobacteria	Actinobacteria	Micrococcales	Microbacteriaceae	Leifsonia	Leifsonia xyli	Leifsonia xyli subsp. xyli str. CTCB07	Full_name	7e-18	32	35	32	96.88
+gene_id_1305303	gene_id_2308699	c_AMP593	Top11_c_AMPs	Actinobacteria	Actinobacteria	Micrococcales	Intrasporangiaceae	Janibacter	Janibacter sp. HTCC2649	Janibacter sp. HTCC2649	Full_name	2e-18	32	35	32	100
+gene_id_2640468	gene_id_2640468	c_AMP1043	Top11_c_AMPs	Bacteroidetes	Bacteroidia	Bacteroidales	Bacteroidaceae	Bacteroides	Bacteroides ovatus	Bacteroides ovatus ATCC 8483	Full_name	6e-20	42	35	34	94.12
+gene_id_1305303	gene_id_2689244	c_AMP593	Top11_c_AMPs	Actinobacteria	Actinobacteria	Actinomycetales	Actinomycetaceae	Actinomyces	Actinomyces odontolyticus	Actinomyces odontolyticus ATCC 17982	Full_name	2e-18	32	35	32	100

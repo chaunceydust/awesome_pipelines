@@ -1,0 +1,85 @@
+33	gene_id_1226660, gene_id_4202058, gene_id_4202287, gene_id_4217660, gene_id_4235846, gene_id_4436331, gene_id_4437526, gene_id_4439992, gene_id_4752092, gene_id_4754712, gene_id_4757814, gene_id_4759874, gene_id_4763115, gene_id_4763770, gene_id_4767738, gene_id_4769499, gene_id_4781041, gene_id_4784233, gene_id_4812863, gene_id_4815965, gene_id_4840930, gene_id_4890886, gene_id_4999064, gene_id_5690956, gene_id_6776534, gene_id_6787720, gene_id_6802959, gene_id_6841184, gene_id_6851347, gene_id_6854000, gene_id_6891711, gene_id_6897664, gene_id_6919094
+17	gene_id_1226661, gene_id_4202059, gene_id_4202288, gene_id_4217661, gene_id_4235845, gene_id_4436332, gene_id_4437525, gene_id_4439993, gene_id_4781042, gene_id_4999063, gene_id_5690957, gene_id_6776533, gene_id_6787721, gene_id_6841185, gene_id_6851348, gene_id_6853999, gene_id_6919093
+15	gene_id_4753220, gene_id_4755940, gene_id_4761191, gene_id_4762150, gene_id_4764585, gene_id_4767303, gene_id_4771607, gene_id_4783835, gene_id_4814418, gene_id_4817245, gene_id_4841438, gene_id_4892021, gene_id_6803547, gene_id_6889648, gene_id_6895601
+14	gene_id_1226021, gene_id_4200325, gene_id_4203862, gene_id_4217312, gene_id_4437959, gene_id_4441746, gene_id_4997334, gene_id_5690267, gene_id_6778074, gene_id_6786766, gene_id_6839685, gene_id_6850712, gene_id_6853132, gene_id_6918367
+13	gene_id_6058170, gene_id_6061472, gene_id_6063316, gene_id_6065678, gene_id_6066103, gene_id_6071938, gene_id_6072619, gene_id_6105710, gene_id_6109450, gene_id_6142698, gene_id_6142962, gene_id_6152088, gene_id_6152212
+12	gene_id_6187047, gene_id_6187048, gene_id_6187049, gene_id_6187050, gene_id_6187051, gene_id_6187052, gene_id_6187053, gene_id_6187054, gene_id_6187055, gene_id_6187056, gene_id_6645324, gene_id_6645327
+10	gene_id_290345, gene_id_290346, gene_id_4317337, gene_id_4317338, gene_id_4836291, gene_id_4836292, gene_id_6779199, gene_id_6784068, gene_id_6842903, gene_id_6848611
+7	gene_id_194889, gene_id_2603828, gene_id_2604459, gene_id_2604852, gene_id_3995666, gene_id_6624631, gene_id_6626536
+6	gene_id_6040815, gene_id_6049214, gene_id_6232245, gene_id_6233679, gene_id_6233680, gene_id_6237845
+5	gene_id_289750, gene_id_4318413, gene_id_4837056, gene_id_6784729, gene_id_6843524
+5	gene_id_6058171, gene_id_6061471, gene_id_6063317, gene_id_6142699, gene_id_6142961
+4	gene_id_2197344, gene_id_4156647, gene_id_4165079, gene_id_4187566
+4	gene_id_4704312, gene_id_5156894, gene_id_5387186, gene_id_6819678
+4	gene_id_6547785, gene_id_6548462, gene_id_6567044, gene_id_6613742
+4	gene_id_6190240, gene_id_6190262, gene_id_6315091, gene_id_6315115
+4	gene_id_6261151, gene_id_6266393, gene_id_6266408, gene_id_6270621
+4	gene_id_6645322, gene_id_6645323, gene_id_6645325, gene_id_6645326
+3	gene_id_3849020, gene_id_3862145, gene_id_4651748
+3	gene_id_6154373, gene_id_6305573, gene_id_6391649
+3	gene_id_6086179, gene_id_6087436, gene_id_6092006
+3	gene_id_4153582, gene_id_4159580, gene_id_4237502
+3	gene_id_6567801, gene_id_6571048, gene_id_6573655
+3	gene_id_2897967, gene_id_2907557, gene_id_3106427
+3	gene_id_6086180, gene_id_6087435, gene_id_6092007
+3	gene_id_5226562, gene_id_6953938, gene_id_6963162
+3	gene_id_4569185, gene_id_4935983, gene_id_4971161
+3	gene_id_6466902, gene_id_6466903, gene_id_6654257
+3	gene_id_6173514, gene_id_6173518, gene_id_6173550
+2	gene_id_6283081, gene_id_6304303
+2	gene_id_6226227, gene_id_6228567
+2	gene_id_1840651, gene_id_2887916
+2	gene_id_6782573, gene_id_6846161
+2	gene_id_4159581, gene_id_4237503
+2	gene_id_6248915, gene_id_6255175
+2	gene_id_4595145, gene_id_6718153
+2	gene_id_6065680, gene_id_6066102
+2	gene_id_3551835, gene_id_4952679
+2	gene_id_4162879, gene_id_4164901
+2	gene_id_6384423, gene_id_6384558
+2	gene_id_6166534, gene_id_6166551
+2	gene_id_6780068, gene_id_6847253
+2	gene_id_6248916, gene_id_6255178
+2	gene_id_6266392, gene_id_6266409
+2	gene_id_1782881, gene_id_6903753
+2	gene_id_6295982, gene_id_6295984
+2	gene_id_6226228, gene_id_6228566
+2	gene_id_4569164, gene_id_4933266
+2	gene_id_6166552, gene_id_6166917
+2	gene_id_6229062, gene_id_6642440
+2	gene_id_6054161, gene_id_6335276
+2	gene_id_6061617, gene_id_6069078
+2	gene_id_2900532, gene_id_2903761
+2	gene_id_6071937, gene_id_6072621
+2	gene_id_6079536, gene_id_6304488
+2	gene_id_2220650, gene_id_6594049
+2	gene_id_4595144, gene_id_6718154
+2	gene_id_6566542, gene_id_6608879
+2	gene_id_1078546, gene_id_3544693
+2	gene_id_1782880, gene_id_6903752
+2	gene_id_6261150, gene_id_6273143
+2	gene_id_6782576, gene_id_6846164
+2	gene_id_3573985, gene_id_4150383
+2	gene_id_1782875, gene_id_6903747
+2	gene_id_2865174, gene_id_3692443
+2	gene_id_29285, gene_id_2891366
+2	gene_id_6282613, gene_id_6303909
+2	gene_id_4612724, gene_id_6592977
+2	gene_id_6166785, gene_id_6291676
+2	gene_id_2865173, gene_id_3692444
+2	gene_id_6104141, gene_id_6106742
+2	gene_id_2865176, gene_id_3692441
+2	gene_id_6105711, gene_id_6109449
+2	gene_id_6781849, gene_id_6845449
+2	gene_id_6782574, gene_id_6846162
+2	gene_id_6782575, gene_id_6846163
+2	gene_id_643135, gene_id_1995679
+2	gene_id_6232249, gene_id_6237844
+2	gene_id_6380931, gene_id_6381464
+2	gene_id_6782572, gene_id_6846160
+2	gene_id_6079633, gene_id_6304300
+2	gene_id_3573924, gene_id_4159524
+2	gene_id_1622291, gene_id_1622293
+2	gene_id_1622292, gene_id_1622294
+2	gene_id_6064553, gene_id_6066090
+2	gene_id_6234922, gene_id_6236003
