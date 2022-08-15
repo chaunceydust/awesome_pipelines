@@ -83,3 +83,8 @@ enricher(gene_list,
           TERM2GENE=KOannotation[c(3,1)],
           TERM2NAME=KOannotation[c(3,4)])
 ```
+
+
+## MEGAN6 - Metagenome Analyzer
+- [megan主页](https://uni-tuebingen.de/en/fakultaeten/mathematisch-naturwissenschaftliche-fakultaet/fachbereiche/informatik/lehrstuehle/algorithms-in-bioinformatics/software/megan6/)
+- [megan软件及数据库下载](https://software-ab.informatik.uni-tuebingen.de/download/megan6/welcome.html)
