@@ -1,0 +1,530 @@
+# hmmsearch :: search profile(s) against a sequence database
+# HMMER 3.3.2 (Nov 2020); http://hmmer.org/
+# Copyright (C) 2020 Howard Hughes Medical Institute.
+# Freely distributed under the BSD open source license.
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# query HMM file:                  sequence.hmm
+# target sequence database:        GCF_902167145.1_Zm-B73-REFERENCE-NAM-5.0_protein.faa
+# output directed to file:         GCF_902167145.1_Zm-B73-REFERENCE-NAM-5.0_protein.hmm.out
+# per-seq hits tabular output:     GCF_902167145.1_Zm-B73-REFERENCE-NAM-5.0_protein.hmm.tblout
+# per-dom hits tabular output:     GCF_902167145.1_Zm-B73-REFERENCE-NAM-5.0_protein.hmm.domtblout
+# pfam-style tabular hit output:   GCF_902167145.1_Zm-B73-REFERENCE-NAM-5.0_protein.hmm.pfamtblout
+# sequence reporting threshold:    E-value <= 1e-05
+# number of worker threads:        20
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+Query:       sequence.align  [M=216]
+Scores for complete sequences (score includes all domains):
+   --- full sequence ---   --- best 1 domain ---    -#dom-
+    E-value  score  bias    E-value  score  bias    exp  N  Sequence       Description
+    ------- ------ -----    ------- ------ -----   ---- --  --------       -----------
+    5.7e-97  325.5   0.0    6.3e-97  325.4   0.0    1.0  1  NP_001106251.1  ZCN14 protein [Zea mays]
+    1.8e-96  323.9   0.0    1.9e-96  323.8   0.0    1.0  1  NP_001106252.1  uncharacterized protein LOC100127524 [Zea may
+    1.6e-93  314.2   0.0    1.8e-93  314.1   0.0    1.0  1  NP_001106253.1  ZCN16 protein [Zea mays]
+    2.8e-93  313.4   0.1    3.1e-93  313.3   0.1    1.0  1  NP_001106254.1  ZCN17 protein [Zea mays]
+    1.3e-92  311.3   0.0    1.4e-92  311.1   0.0    1.0  1  NP_001106256.1  ZCN19 protein [Zea mays]
+    4.6e-92  309.5   0.0      5e-92  309.3   0.0    1.0  1  NP_001106257.1  uncharacterized protein LOC100127530 [Zea may
+    1.5e-91  307.8   0.0    2.5e-91  307.1   0.0    1.3  1  XP_008654209.1  ZCN14 protein isoform X1 [Zea mays]
+    3.8e-88  296.7   0.0    4.1e-88  296.6   0.0    1.0  1  NP_001106265.1  uncharacterized protein LOC100127539 [Zea may
+    4.2e-88  296.5   0.0    4.6e-88  296.4   0.0    1.0  1  XP_008652921.1  protein FLOWERING LOCUS T [Zea mays]
+      5e-87  293.0   0.0    5.5e-87  292.9   0.0    1.0  1  NP_001354358.1  ZCN18 protein [Zea mays]
+      2e-86  291.1   0.0    2.3e-86  290.8   0.0    1.0  1  NP_001106246.1  ZCN7 protein [Zea mays]
+    2.4e-86  290.8   0.0    2.8e-86  290.5   0.0    1.0  1  XP_008646959.1  protein FLOWERING LOCUS T [Zea mays]
+    1.3e-85  288.4   0.0    1.4e-85  288.3   0.0    1.0  1  NP_001106250.1  uncharacterized protein LOC100127522 [Zea may
+    2.4e-85  287.5   0.0    2.7e-85  287.4   0.0    1.0  1  NP_001106247.1  ZCN8 protein [Zea mays]
+    6.2e-83  279.6   0.0    7.4e-83  279.4   0.0    1.0  1  XP_008671372.1  protein FLOWERING LOCUS T [Zea mays]
+      7e-82  276.2   0.0    7.7e-82  276.1   0.0    1.0  1  NP_001296779.1  protein TWIN SISTER of FT [Zea mays]
+    5.6e-72  243.8   0.0    6.1e-72  243.7   0.0    1.0  1  NP_001105959.1  uncharacterized protein LOC100037785 [Zea may
+    2.4e-71  241.8   0.2    2.6e-71  241.7   0.2    1.0  1  NP_001106244.1  ZCN5 protein [Zea mays]
+    5.3e-71  240.6   0.1    5.8e-71  240.5   0.1    1.0  1  NP_001106242.1  ZCN3 protein [Zea mays]
+      1e-69  236.5   0.1    1.1e-69  236.3   0.1    1.0  1  NP_001106241.1  ZCN2 protein [Zea mays]
+    3.4e-69  234.7   0.1    3.7e-69  234.6   0.1    1.0  1  NP_001106243.1  ZCN4 protein [Zea mays]
+    4.5e-66  224.5   0.1    4.9e-66  224.4   0.1    1.0  1  NP_001106245.1  ZCN6 protein [Zea mays]
+    1.9e-62  212.7   0.0    2.1e-62  212.6   0.0    1.0  1  NP_001106249.1  ZCN10 protein [Zea mays]
+    2.2e-61  209.2   0.0    2.3e-61  209.1   0.0    1.0  1  NP_001106248.2  ZCN9 protein [Zea mays]
+    3.3e-53  182.5   0.0    3.6e-53  182.3   0.0    1.0  1  NP_001106264.1  ZCN11 protein [Zea mays]
+    3.3e-53  182.5   0.0    3.6e-53  182.3   0.0    1.0  1  XP_020394352.1  ZCN11 protein isoform X1 [Zea mays]
+    1.7e-47  163.8   0.1    2.1e-47  163.5   0.1    1.0  1  XP_008680422.1  protein HEADING DATE 3A-like [Zea mays]
+
+
+Domain annotation for each sequence (and alignments):
+>> NP_001106251.1  ZCN14 protein [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  325.4   0.0    3e-100   6.3e-97       3     175 ..       1     173 []       1     173 [] 0.99
+
+  Alignments for each domain:
+  == domain 1  score: 325.4 bits;  conditional E-value: 3e-100
+  sequence.align   3 mssr.dplvvgrvigdvldpftksvslrvaynnrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipat 96 
+                     m+ r dplvvgr+igdv+dpf+++v+lrvay  rev+ngcel+psa+++qPrve+gG D+r+fYTlvmvDpDaPsps+p+lreyLhwlvtdipat
+  NP_001106251.1   1 MQ-RgDPLVVGRIIGDVVDPFVRRVPLRVAYAAREVSNGCELRPSAIADQPRVEVGGPDMRTFYTLVMVDPDAPSPSDPNLREYLHWLVTDIPAT 94 
+                     66.55****************************************************************************************** PP
+
+  sequence.align  97 tgasFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsggrrf 175
+                     tg+sFG+e+v+YesPrp  gihr+vf+lf+qlgr+tv+ap+wrqnf+tr+faelynlg+pvAavyfncqresg+ggrr+
+  NP_001106251.1  95 TGVSFGTEVVCYESPRPVLGIHRVVFLLFQQLGRQTVYAPGWRQNFSTRDFAELYNLGLPVAAVYFNCQRESGTGGRRM 173
+                     *****************************************************************************96 PP
+
+>> NP_001106252.1  uncharacterized protein LOC100127524 [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  323.8   0.0  9.1e-100   1.9e-96       5     175 ..       5     175 ..       1     177 [] 0.98
+
+  Alignments for each domain:
+  == domain 1  score: 323.8 bits;  conditional E-value: 9.1e-100
+  sequence.align   5 srdplvvgrvigdvldpftksvslrvaynnrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipattga 99 
+                      r+plvvgrv+gdvldpf+++ +lrv+y+ r v+ngcelkps vv+qPrve+gG D+r+fYTlvmvDpDaPsps+p+lreyLhwlvtdip+ttga
+  NP_001106252.1   5 DREPLVVGRVVGDVLDPFVRTTNLRVSYGARTVSNGCELKPSMVVHQPRVEVGGPDMRTFYTLVMVDPDAPSPSDPNLREYLHWLVTDIPGTTGA 99 
+                     579******************************************************************************************** PP
+
+  sequence.align 100 sFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsggrrf 175
+                      FGqe+++YesPrp++gihr+v+vlf+qlgr+tv+ap+wrqnfntr+faelynlg pvAavyfncqre gsggrr+
+  NP_001106252.1 100 AFGQEVICYESPRPTMGIHRFVLVLFQQLGRQTVYAPGWRQNFNTRDFAELYNLGPPVAAVYFNCQREAGSGGRRM 175
+                     ***************************************************************************8 PP
+
+>> NP_001106253.1  ZCN16 protein [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  314.1   0.0   8.3e-97   1.8e-93       3     176 ..       1     173 [.       1     174 [] 0.99
+
+  Alignments for each domain:
+  == domain 1  score: 314.1 bits;  conditional E-value: 8.3e-97
+  sequence.align   3 mssrdplvvgrvigdvldpftksvslrvaynnrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipatt 97 
+                     ms rdplvvg+v+gd+ldpf+ks+slrv ynnre+tng+e++ps+v+ +Pr+ei+G D+r++YTlvmvDpD+Pspsnpt reyLhwlvtdip++t
+  NP_001106253.1   1 MS-RDPLVVGNVVGDILDPFIKSASLRVLYNNRELTNGSEFRPSQVAYEPRIEIAGYDMRTLYTLVMVDPDSPSPSNPTKREYLHWLVTDIPEST 94 
+                     77.9******************************************************************************************* PP
+
+  sequence.align  98 gasFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsggrrfs 176
+                     ++sFG+e+v+YesP+psagihr+vfvlfrq  r+t++ap+wrqnfntr+f++lynlg pvA+v+fncqre+g+ggrr++
+  NP_001106253.1  95 DVSFGNEVVSYESPKPSAGIHRFVFVLFRQSVRQTIYAPGWRQNFNTRDFSALYNLGPPVASVFFNCQRENGCGGRRYI 173
+                     *****************************************************************************86 PP
+
+>> NP_001106254.1  ZCN17 protein [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  313.3   0.1   1.4e-96   3.1e-93       2     176 ..       3     176 ..       1     177 [] 0.99
+
+  Alignments for each domain:
+  == domain 1  score: 313.3 bits;  conditional E-value: 1.4e-96
+  sequence.align   2 kmssrdplvvgrvigdvldpftksvslrvaynnrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipat 96 
+                     +ms rdplvvg+v+gd++dpf+ ++slrv ynn+e+tng++lkps+v+n+Prv++gG+D+r++YTlvmvDpDaPspsnpt re Lhwlvtdip+t
+  NP_001106254.1   3 NMS-RDPLVVGNVVGDIVDPFITTASLRVFYNNKEMTNGSDLKPSQVMNEPRVHVGGRDMRTLYTLVMVDPDAPSPSNPTKRENLHWLVTDIPET 96 
+                     588.******************************************************************************************* PP
+
+  sequence.align  97 tgasFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsggrrfs 176
+                     t+asFG+eiv YesPrp agihr+ fvlfrq  r+t++ap+wr+nfntr+fa+ y lg+pvAavyfncqre+g+ggrr++
+  NP_001106254.1  97 TDASFGNEIVPYESPRPIAGIHRFAFVLFRQSVRQTTYAPGWRSNFNTRDFAAIYGLGSPVAAVYFNCQRENGCGGRRYI 176
+                     ******************************************************************************86 PP
+
+>> NP_001106256.1  ZCN19 protein [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  311.1   0.0   6.7e-96   1.4e-92       3     176 ..       1     174 [.       1     175 [] 0.99
+
+  Alignments for each domain:
+  == domain 1  score: 311.1 bits;  conditional E-value: 6.7e-96
+  sequence.align   3 mssrdplvvgrvigdvldpftksvslrvaynnrevtngcelkpsavvnqPrvei.gGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipat 96 
+                     ms rdplvvg+v+gd+ldpftk +sl+v ynn+e+tng+elkps+v+n+Prvei gG+D++++YTlvmvDpD+Pspsnpt reyLhwlvtdip++
+  NP_001106256.1   1 MS-RDPLVVGHVVGDILDPFTKAASLKVLYNNKELTNGSELKPSQVANEPRVEIiGGRDMSNLYTLVMVDPDSPSPSNPTKREYLHWLVTDIPES 94 
+                     77.9*************************************************9999************************************** PP
+
+  sequence.align  97 tgasFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsggrrfs 176
+                     ++as+G+eiv+Ye+P+p+agihr+vfvlfrq  ++tv+ap+wrqnfntr+f++ ynlg pvAav+fncqre+g+ggrr++
+  NP_001106256.1  95 ANASYGNEIVSYENPKPTAGIHRFVFVLFRQSVQQTVYAPGWRQNFNTRDFSAFYNLGPPVAAVFFNCQRENGCGGRRYI 174
+                     ******************************************************************************86 PP
+
+>> NP_001106257.1  uncharacterized protein LOC100127530 [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  309.3   0.0   2.4e-95     5e-92       3     176 ..       1     173 [.       1     174 [] 0.99
+
+  Alignments for each domain:
+  == domain 1  score: 309.3 bits;  conditional E-value: 2.4e-95
+  sequence.align   3 mssrdplvvgrvigdvldpftksvslrvaynnrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipatt 97 
+                     ms rdplvvg+v+gd+ldpf+k++sl+v ynn+e+tng++lkps+v+++PrveigG+D+r++YTlvmvDpD+Pspsnpt reyLhwlvtdip+++
+  NP_001106257.1   1 MS-RDPLVVGHVVGDILDPFIKTASLKVLYNNKELTNGSDLKPSQVASEPRVEIGGRDMRNLYTLVMVDPDSPSPSNPTNREYLHWLVTDIPESA 94 
+                     77.9******************************************************************************************* PP
+
+  sequence.align  98 gasFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsggrrfs 176
+                     +as+ +eiv+Ye+P+psagihr+vfvlfrq  ++tv+ap+wrqnfntr+f++lynlg pvAav+fncqre+g+ggrr++
+  NP_001106257.1  95 NASYRNEIVSYENPKPSAGIHRFVFVLFRQSVQQTVYAPGWRQNFNTRDFSALYNLGPPVAAVFFNCQRENGCGGRRYI 173
+                     *****************************************************************************86 PP
+
+>> XP_008654209.1  ZCN14 protein isoform X1 [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  307.1   0.0   1.2e-94   2.5e-91       3     175 ..       1     191 []       1     191 [] 0.96
+
+  Alignments for each domain:
+  == domain 1  score: 307.1 bits;  conditional E-value: 1.2e-94
+  sequence.align   3 mssr.dplvvgrvigdvldpftksvslrvaynnrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlrey........... 85 
+                     m+ r dplvvgr+igdv+dpf+++v+lrvay  rev+ngcel+psa+++qPrve+gG D+r+fYTlvmvDpDaPsps+p+lrey           
+  XP_008654209.1   1 MQ-RgDPLVVGRIIGDVVDPFVRRVPLRVAYAAREVSNGCELRPSAIADQPRVEVGGPDMRTFYTLVMVDPDAPSPSDPNLREYlhcmlqhtycq 94 
+                     66.55*******************************************************************************99999999999 PP
+
+  sequence.align  86 .......LhwlvtdipattgasFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsggr 173
+                            L  lvtdipattg+sFG+e+v+YesPrp  gihr+vf+lf+qlgr+tv+ap+wrqnf+tr+faelynlg+pvAavyfncqresg+ggr
+  XP_008654209.1  95 dlvyilhLVRLVTDIPATTGVSFGTEVVCYESPRPVLGIHRVVFLLFQQLGRQTVYAPGWRQNFSTRDFAELYNLGLPVAAVYFNCQRESGTGGR 189
+                     99999666666999********************************************************************************* PP
+
+  sequence.align 174 rf 175
+                     r+
+  XP_008654209.1 190 RM 191
+                     96 PP
+
+>> NP_001106265.1  uncharacterized protein LOC100127539 [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  296.6   0.0   1.9e-91   4.1e-88       3     184 ..       1     181 [.       1     187 [] 0.97
+
+  Alignments for each domain:
+  == domain 1  score: 296.6 bits;  conditional E-value: 1.9e-91
+  sequence.align   3 mssrdplvvgrvigdvldpftksvslrvaynnrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipatt 97 
+                     m+ +d+l++g++igdvldpft+svsl+v y+ r+v +g+e+++sav+ +PrveigGdD+r+ YTlvmvDpDaP+psnp+lreyLhw+vtdipa+t
+  NP_001106265.1   1 MA-NDSLTRGHIIGDVLDPFTSSVSLSVLYDGRPVFDGMEFRASAVSVKPRVEIGGDDFRVAYTLVMVDPDAPNPSNPSLREYLHWMVTDIPAST 94 
+                     66.7******************************************************************************************* PP
+
+  sequence.align  98 gasFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsggrrfskelskdsk 184
+                     + sFG+e++ YesP+p++gihrlv+vl++qlgr+tv+ap+ rqnfn r+fa+++nlg+pvAa+yfncqr++g+ggrrf+ ++++  +
+  NP_001106265.1  95 DDSFGRELIPYESPSPTMGIHRLVLVLYQQLGRGTVFAPQVRQNFNLRNFARRFNLGKPVAATYFNCQRQTGTGGRRFTCVFDHVVQ 181
+                     *******************************************************************************99988555 PP
+
+>> XP_008652921.1  protein FLOWERING LOCUS T [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  296.4   0.0   2.2e-91   4.6e-88       3     176 ..       1     175 [.       1     178 [] 0.98
+
+  Alignments for each domain:
+  == domain 1  score: 296.4 bits;  conditional E-value: 2.2e-91
+  sequence.align   3 ms.srdplvvgrvigdvldpftksvslrvaynnrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipat 96 
+                     ms +rdpl++++vigdvldpf+ks+++r++y+++e+tng+ l++sav+n+P+vei+G+D++k+YTlvmvDpDaPsps+p++reyLhwlvtdip++
+  XP_008652921.1   1 MSrGRDPLALSQVIGDVLDPFIKSATMRINYGDKEITNGTGLRASAVLNAPHVEIEGHDQTKLYTLVMVDPDAPSPSKPEYREYLHWLVTDIPEA 95 
+                     56578****************************************************************************************** PP
+
+  sequence.align  97 tgasFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsggrrfs 176
+                      +++FG+eiv YesPrp+agihr vfvlf+q++r+tv+ap+wr nfn+r+f++ ynlg pvAa+yfncq+esg ggrrf 
+  XP_008652921.1  96 RDIRFGNEIVPYESPRPPAGIHRTVFVLFKQQARQTVYAPGWRPNFNIRDFSAIYNLGPPVAALYFNCQKESGVGGRRFL 175
+                     ******************************************************************************96 PP
+
+>> NP_001354358.1  ZCN18 protein [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  292.9   0.0   2.6e-90   5.5e-87       3     176 ..       1     175 [.       1     178 [] 0.98
+
+  Alignments for each domain:
+  == domain 1  score: 292.9 bits;  conditional E-value: 2.6e-90
+  sequence.align   3 ms.srdplvvgrvigdvldpftksvslrvaynnrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipat 96 
+                     ms +rdpl++++vigdvldpf+ks+++r++y+++e+tng+ l++sav+n+P+vei+G+D++++YTlvmvDpDaPsps+p++reyLhwlvtdip++
+  NP_001354358.1   1 MSrGRDPLALSQVIGDVLDPFIKSATMRINYGDKEITNGTGLRASAVLNAPHVEIEGHDQTNLYTLVMVDPDAPSPSKPEYREYLHWLVTDIPEA 95 
+                     56578****************************************************************************************** PP
+
+  sequence.align  97 tgasFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsggrrfs 176
+                      ++  G+eiv YesPrp+agihr+vfvlf+q++r+tv+ap+wrqnfn+r+f++ ynlgapvAa+yfncq+esg ggrrf 
+  NP_001354358.1  96 RDICSGNEIVPYESPRPPAGIHRIVFVLFKQQARQTVYAPGWRQNFNIRDFSAIYNLGAPVAALYFNCQKESGVGGRRFL 175
+                     ******************************************************************************96 PP
+
+>> NP_001106246.1  ZCN7 protein [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  290.8   0.0   1.1e-89   2.3e-86       5     177 ..      20     191 ..       8     192 .] 0.97
+
+  Alignments for each domain:
+  == domain 1  score: 290.8 bits;  conditional E-value: 1.1e-89
+  sequence.align   5 srdplvvgrvigdvldpftksvslrvaynnrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipattga 99 
+                       dplv++rv++dvld+ft +++lr++ynn++v +g+elkpsav+++Prv+igG+D+r+fYTlv++DpDaPsps+p+lreyLhw+vtdip+tt++
+  NP_001106246.1  20 ATDPLVMARVLQDVLDTFTPTIPLRITYNNSQVLAGAELKPSAVISKPRVDIGGNDMRTFYTLVLIDPDAPSPSHPSLREYLHWMVTDIPETTSV 114
+                     46********************************************************************************************* PP
+
+  sequence.align 100 sFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsggrrfsk 177
+                     +FGqe+v+Ye+P+p++gihrlvfvlfrqlgr+tv+ape+rqnfn+r+fa++y+l + ++a++fncqre+gsggrrf++
+  NP_001106246.1 115 NFGQELVFYERPDPRSGIHRLVFVLFRQLGRGTVFAPEMRQNFNCRSFARQYHL-SIASATHFNCQREGGSGGRRFRE 191
+                     ******************************************************.55667****************86 PP
+
+>> XP_008646959.1  protein FLOWERING LOCUS T [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  290.5   0.0   1.3e-89   2.8e-86       3     180 ..       1     177 [.       1     182 [. 0.98
+
+  Alignments for each domain:
+  == domain 1  score: 290.5 bits;  conditional E-value: 1.3e-89
+  sequence.align   3 mssrdplvvgrvigdvldpftksvslrvaynnrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipatt 97 
+                     m+ +d+lv++rvigdvldpf +s++l v +n  ++++g+el+p av+++PrveigGdD r+  TlvmvDpDaP+psnptlreyLhw+vtdipa+t
+  XP_008646959.1   1 MA-NDSLVTARVIGDVLDPFYSSIDLMVLFNGLPIVSGVELRPPAVSERPRVEIGGDDYRVACTLVMVDPDAPNPSNPTLREYLHWMVTDIPAST 94 
+                     66.7******************************************************************************************* PP
+
+  sequence.align  98 gasFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsggrrfskels 180
+                     + ++G+e+++Ye+P+p++gihr+v+vlfrqlgretv+ap+ r+nf+tr fa++ynlgapvAa+yfncqr++gsggrrf+ +++
+  XP_008646959.1  95 DDTHGREVMCYEAPNPTTGIHRMVLVLFRQLGRETVYAPSRRHNFSTRAFARRYNLGAPVAAMYFNCQRQNGSGGRRFTGPYT 177
+                     ******************************************************************************98775 PP
+
+>> NP_001106250.1  uncharacterized protein LOC100127522 [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  288.3   0.0   6.7e-89   1.4e-85       3     178 ..       1     175 [.       1     177 [] 0.98
+
+  Alignments for each domain:
+  == domain 1  score: 288.3 bits;  conditional E-value: 6.7e-89
+  sequence.align   3 mssrdplvvgrvigdvldpftksvslrvaynnrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipatt 97 
+                     ms  +plv+++vi dvld f+ s+ lr++yn+r + +g+elkpsavvn+Prv++gG Dlr+fYTlv+vDpDaPspsnp+lreyLhw+v dip+tt
+  NP_001106250.1   1 MSDVEPLVLAHVIRDVLDSFAPSIGLRITYNSRLLLSGVELKPSAVVNKPRVDVGGTDLRVFYTLVLVDPDAPSPSNPSLREYLHWMVIDIPGTT 95 
+                     56558****************************************************************************************** PP
+
+  sequence.align  98 gasFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsggrrfske 178
+                     gasFGqe+++Ye+P+p++gihr+vfvlfrqlgr+tv+ap++r+nfn+++fa++y+l   vAa+yfncqre gsggrrf++e
+  NP_001106250.1  96 GASFGQELMFYERPEPRSGIHRMVFVLFRQLGRGTVFAPDMRHNFNCKSFARQYHL-DVVAATYFNCQREAGSGGRRFRPE 175
+                     ********************************************************.88999****************986 PP
+
+>> NP_001106247.1  ZCN8 protein [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  287.4   0.0   1.3e-88   2.7e-85       3     177 ..       1     174 [.       1     175 [] 0.98
+
+  Alignments for each domain:
+  == domain 1  score: 287.4 bits;  conditional E-value: 1.3e-88
+  sequence.align   3 mssrdplvvgrvigdvldpftksvslrvaynnrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipatt 97 
+                     ms  d+lv++rvi+dvldpft +++lr++ynnr +   +elkpsavv++Prv+igG+D+r fYTlv++DpDaPsps+p+lreyLhw+vtdip+tt
+  NP_001106247.1   1 MSATDHLVMARVIQDVLDPFTPTIPLRITYNNRLLLPSAELKPSAVVSKPRVDIGGSDMRAFYTLVLIDPDAPSPSHPSLREYLHWMVTDIPETT 95 
+                     7777******************************************************************************************* PP
+
+  sequence.align  98 gasFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsggrrfsk 177
+                     +++FGqe+++Ye+P+p++gihrlvfvlfrqlgr+tv+ape+r+nfn+r+fa++y+l+ +  a++fncqre+gsggrrf++
+  NP_001106247.1  96 SVNFGQELIFYERPDPRSGIHRLVFVLFRQLGRGTVFAPEMRHNFNCRSFARQYHLSIAT-ATHFNCQREGGSGGRRFRE 174
+                     ********************************************************6666.6****************86 PP
+
+>> XP_008671372.1  protein FLOWERING LOCUS T [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  279.4   0.0   3.5e-86   7.4e-83       5     181 ..       5     182 ..       1     186 [. 0.97
+
+  Alignments for each domain:
+  == domain 1  score: 279.4 bits;  conditional E-value: 3.5e-86
+  sequence.align   5 srdplvvgrvigdvldpftksvslrvaynnrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipattga 99 
+                      +d+lv+++vigdvldpf   v++ + ++  ++++g+el+++av+++PrveigG+D r  YTlvmvDpDaP+psnptlreyLhw+vtdipa+t+ 
+  XP_008671372.1   5 ANDSLVTAHVIGDVLDPFYTAVDMMILFGGAPIISGMELRAQAVSDRPRVEIGGEDYRDAYTLVMVDPDAPNPSNPTLREYLHWMVTDIPASTDN 99 
+                     47********************************************************************************************* PP
+
+  sequence.align 100 sFGqeivvYesPrpsagihrlvfvlfrqlgretvl.apewrqnfntrefaelynlgapvAavyfncqresgsggrrfskelsk 181
+                     ++G+e+++Ye P ps+gihr+v+vlf+qlgr+tv+ ap+ r+nf+tr fa++ynlgapvAa+yfncqr++gsgg rf+ ++++
+  XP_008671372.1 100 THGREMMCYEPPAPSTGIHRMVLVLFQQLGRDTVFaAPSRRHNFSTRGFARRYNLGAPVAAMYFNCQRQTGSGGPRFTGPYTS 182
+                     *****************************************************************************999876 PP
+
+>> NP_001296779.1  protein TWIN SISTER of FT [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  276.1   0.0   3.6e-85   7.7e-82       3     175 ..       1     174 [.       1     175 [] 0.99
+
+  Alignments for each domain:
+  == domain 1  score: 276.1 bits;  conditional E-value: 3.6e-85
+  sequence.align   3 mssrdplvvgrvigdvldpftksvslrvaynnrevtngcelkpsavvnqPrvei.gGdDlr.kfYTlvmvDpDaPspsnptlreyLhwlvtdipa 95 
+                     ms rdplvvg ++gdv+d f++s+ lrv+y+ re+t g+el+ps+v+++P+v+i gG+D r ++YTlvm DpDaPspsnp+ reyLhwlvtdip+
+  NP_001296779.1   1 MS-RDPLVVGSIVGDVVDYFSASALLRVMYGGREMTCGSELRPSQVASEPTVHItGGRDGRpVLYTLVMLDPDAPSPSNPSKREYLHWLVTDIPE 94 
+                     77.9**************************************************777****9********************************* PP
+
+  sequence.align  96 ttgasFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsggrrf 175
+                      +ga++G+e+v+YesPrpsagihr+vf++frq  r+ ++ap+wr+nfntr+fa+ y+lg pvAa+yfncqre+g+ggrr+
+  NP_001296779.1  95 GAGANHGNEVVAYESPRPSAGIHRFVFIVFRQAVRQAIYAPGWRANFNTRDFAACYSLGPPVAATYFNCQREGGCGGRRY 174
+                     *******************************************************************************8 PP
+
+>> NP_001105959.1  uncharacterized protein LOC100037785 [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  243.7   0.0   2.9e-75   6.1e-72       3     171 ..       1     171 [.       1     173 [] 0.96
+
+  Alignments for each domain:
+  == domain 1  score: 243.7 bits;  conditional E-value: 2.9e-75
+  sequence.align   3 mssr..dplvvgrvigdvldpftksvslrvayn.nrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdip 94 
+                     ms r  +pl+vgrvig+vld f+  v++ v+yn n+ v ng e+ psa+v++Prve++G Dlr+f+Tlvm DpD P ps+p lre+Lhw+vtdip
+  NP_001105959.1   1 MS-RsvEPLIVGRVIGEVLDSFNPCVKMIVTYNsNKLVFNGHEIYPSAIVSKPRVEVQGGDLRSFFTLVMTDPDVPGPSDPYLREHLHWIVTDIP 94 
+                     55.3349*************************97789********************************************************** PP
+
+  sequence.align  95 attgasFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsg 171
+                     +tt+asFG+e+++YesPrp++gihr++fvlf+q gr+tv+ p+ r  fntr+fae++ lg+pvAavyfn+qre+  +
+  NP_001105959.1  95 GTTDASFGREVISYESPRPNIGIHRFIFVLFKQKGRQTVTVPSFRDHFNTRQFAEENDLGLPVAAVYFNAQRETAAR 171
+                     ************************************************************************98443 PP
+
+>> NP_001106244.1  ZCN5 protein [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  241.7   0.2   1.2e-74   2.6e-71       4     171 ..       2     171 ..       1     173 [] 0.96
+
+  Alignments for each domain:
+  == domain 1  score: 241.7 bits;  conditional E-value: 1.2e-74
+  sequence.align   4 ssr..dplvvgrvigdvldpftksvslrvayn.nrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipa 95 
+                     s r  +plvvg+vig+v+d+f+ +v+++v+y+ +++v ng e+ psav+++Prv+++GdD+r+f+Tlvm DpD P ps+p lre+Lhw+vtdip+
+  NP_001106244.1   2 S-RalEPLVVGKVIGEVIDNFNPTVKMTVTYGsDKQVFNGHEFLPSAVLSKPRVQVQGDDMRSFFTLVMTDPDVPGPSDPYLREHLHWMVTDIPG 95 
+                     5.3358*************************8567************************************************************ PP
+
+  sequence.align  96 ttgasFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsg 171
+                     tt+asFG+e v+YesP+p +g+hr+vfvlf+q +r++v  p+ r  fntr+fa+ +nlg+pvAavyfn+qre+  +
+  NP_001106244.1  96 TTDASFGREQVMYESPKPYIGFHRFVFVLFKQSSRQSVCPPSSRDYFNTRRFAADNNLGLPVAAVYFNAQRETAAR 171
+                     ***********************************************************************98443 PP
+
+>> NP_001106242.1  ZCN3 protein [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  240.5   0.1   2.7e-74   5.8e-71       3     171 ..       1     171 [.       1     173 [] 0.96
+
+  Alignments for each domain:
+  == domain 1  score: 240.5 bits;  conditional E-value: 2.7e-74
+  sequence.align   3 mssr..dplvvgrvigdvldpftksvslrvayn.nrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdip 94 
+                     ms r  +pl+vgrvig+vld f+  v++ v+yn n+ v ng e+ psavv++Prv ++G Dlr+f+Tlvm DpD P ps+p lre+Lhw+vtdip
+  NP_001106242.1   1 MS-RsvEPLIVGRVIGEVLDSFNPCVKMIVTYNsNKLVFNGHEIYPSAVVSKPRVAVQGGDLRSFFTLVMTDPDVPGPSDPYLREHLHWIVTDIP 94 
+                     55.3349*************************97789********************************************************** PP
+
+  sequence.align  95 attgasFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsg 171
+                     +tt+asFG++i++YesPrps+gihr++fvlf+q+gr++v+ p+ r  fntr+fae++ lg+pvAavyfn+qre+  +
+  NP_001106242.1  95 GTTDASFGRQIISYESPRPSIGIHRFIFVLFKQQGRQNVTVPSFRDHFNTRQFAEENDLGLPVAAVYFNAQRETAAR 171
+                     ************************************************************************98443 PP
+
+>> NP_001106241.1  ZCN2 protein [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  236.3   0.1   5.1e-73   1.1e-69       6     171 ..       3     171 ..       1     173 [] 0.96
+
+  Alignments for each domain:
+  == domain 1  score: 236.3 bits;  conditional E-value: 5.1e-73
+  sequence.align   6 r..dplvvgrvigdvldpftksvslrvayn.nrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipatt 97 
+                     r  +pl+vg+vig+vld f+ +v++ v+yn n++v ng e+ psav+ +Prve++G Dlr+f+Tlvm DpD P ps+p lre+Lhw+vtdip+tt
+  NP_001106241.1   3 RvlEPLIVGKVIGEVLDHFNPTVKMVVTYNsNKQVFNGHEFFPSAVAAKPRVEVQGGDLRSFFTLVMTDPDVPGPSDPYLREHLHWIVTDIPGTT 97 
+                     4458*************************9788************************************************************** PP
+
+  sequence.align  98 gasFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsg 171
+                     +asFG+e+v+Ye P+p++gihr++fvlfrq +r+ v  p+ +  f+tr+fae++ lg+pvAavyfn+qre+  +
+  NP_001106241.1  98 DASFGKEVVSYEIPKPNIGIHRFIFVLFRQKSRQAVNPPSSKDRFSTRQFAEENDLGLPVAAVYFNAQRETAAR 171
+                     *********************************************************************98443 PP
+
+>> NP_001106243.1  ZCN4 protein [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  234.6   0.1   1.8e-72   3.7e-69       4     171 ..       2     174 ..       1     176 [] 0.95
+
+  Alignments for each domain:
+  == domain 1  score: 234.6 bits;  conditional E-value: 1.8e-72
+  sequence.align   4 ssr..dplvvgrvigdvldpftksvslrvayn.nrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipa 95 
+                     s r  +plvvg+vig+v+d+f+ +v+++v+y+ n++v ng e+ psav+++Prve++GdD+r+f+Tlvm DpD P ps+p lre++hw+vtdip+
+  NP_001106243.1   2 S-RalEPLVVGKVIGEVIDNFNPTVKMTVTYGsNKQVFNGHEFFPSAVLSKPRVEVQGDDMRSFFTLVMTDPDVPGPSDPYLREHIHWIVTDIPG 95 
+                     5.3358*************************8688************************************************************ PP
+
+  sequence.align  96 ttgasFGqeivvYesPrpsagihrlvfvlfrqlgretvlapew...rqnfntrefaelynlgapvAavyfncqresgsg 171
+                     tt+asFG+e+v+YesP+p +gihr+vfvlf+q +r++   p+    r  fntr+fa+ +nlg+pvAavyfn+qre+  +
+  NP_001106243.1  96 TTDASFGRELVMYESPKPYIGIHRFVFVLFKQSSRQSARPPSSgggRDYFNTRRFAADNNLGLPVAAVYFNAQRETAAR 174
+                     **************************************9999999*****************************98443 PP
+
+>> NP_001106245.1  ZCN6 protein [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  224.4   0.1   2.3e-69   4.9e-66       3     171 ..       1     175 [.       1     177 [] 0.91
+
+  Alignments for each domain:
+  == domain 1  score: 224.4 bits;  conditional E-value: 2.3e-69
+  sequence.align   3 mssr..dplvvgrvigdvldpftksvslrvayn.nrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdip 94 
+                     ms r  ++lvvgrvig+vld f+  v++ v+yn nr v ng e+ psavv++Prve++G Dlr+f+Tlvm DpD P ps+p lre+Lhw+vtdip
+  NP_001106245.1   1 MS-RsvESLVVGRVIGEVLDCFSPCVKMVVTYNsNRLVFNGHEIYPSAVVSKPRVEVQGGDLRSFFTLVMTDPDVPGPSDPYLREHLHWIVTDIP 94 
+                     55.22489************************9888*********************************************************** PP
+
+  sequence.align  95 attgasFGqeivvYesPrpsagihrlvfvlfrql..gretvl.apew..rqnfntrefaelynlgapvAavyfncqresgsg 171
+                     +tt+asFG+e+v+YesPrp +gihr++fvlf+q   +++tv   p    r    tr+fa+++ lg pvAavyfn+qre+  +
+  NP_001106245.1  95 GTTDASFGREVVSYESPRPGIGIHRFIFVLFKQKrrQQQTVAaVP-SssRDHSITRQFAAENDLGHPVAAVYFNAQRETAAR 175
+                     **********************************43344555333.25788889***********************98443 PP
+
+>> NP_001106249.1  ZCN10 protein [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  212.6   0.0   9.7e-66   2.1e-62       6     173 ..       3     171 ..       1     172 [] 0.95
+
+  Alignments for each domain:
+  == domain 1  score: 212.6 bits;  conditional E-value: 9.7e-66
+  sequence.align   6 r..dplvvgrvigdvldpftksvslrvaynnrevtngcelkpsavvnqPrveigGdDlr.kfYTlvmvDpDaPspsnptlreyLhwlvtdipatt 97 
+                     r  dplvvgrvig+v+d f+ svs++vay+ ++++ngc lkpsa++  P v+i+G  +r  +YTl+m DpDaPsps+pt+reyLhw+vt+ip+ t
+  NP_001106249.1   3 RfvDPLVVGRVIGEVVDLFVPSVSMTVAYGPKDISNGCLLKPSATAAPPLVRISG--RRdDLYTLIMTDPDAPSPSDPTMREYLHWIVTNIPGGT 95 
+                     445****************************************************..5559********************************** PP
+
+  sequence.align  98 gasFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsggr 173
+                     +a+ G+e+v Y  Prp++gihr+v+vlf+q  r     p+ r+nfntr fa+ ++lg+p A vyfn+q+e  +  r
+  NP_001106249.1  96 DANKGEEVVEYMGPRPPVGIHRYVLVLFEQKTRVHAEGPGERANFNTRAFAAAHELGLPTAVVYFNAQKEPANHRR 171
+                     *********************************9999********************************9755555 PP
+
+>> NP_001106248.2  ZCN9 protein [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  209.1   0.0   1.1e-64   2.3e-61       6     171 ..       3     170 ..       1     172 [] 0.95
+
+  Alignments for each domain:
+  == domain 1  score: 209.1 bits;  conditional E-value: 1.1e-64
+  sequence.align   6 r..dplvvgrvigdvldpftksvslrvayn.nrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipatt 97 
+                     r  dplvvgrvig+v+d f+ s+s++vay+  ++++ngc lkpsa++  P v+i+G  ++ +YTl+m DpDaPspsnpt+reyLhw+v +ip+ t
+  NP_001106248.2   3 RfvDPLVVGRVIGEVVDLFVPSISMTVAYDgPKDISNGCLLKPSATAAPPLVRISG-RRNDLYTLIMTDPDAPSPSNPTMREYLHWIVINIPGGT 96 
+                     445**************************7467***********************.4459********************************** PP
+
+  sequence.align  98 gasFGqeivvYesPrpsagihrlvfvlfrqlgretvlapewrqnfntrefaelynlgapvAavyfncqresgsg 171
+                     +a+ G+e+v Y  Prp++gihr+v+vlf+q  r    ap+ r+nf+tr fa+ ++lg+p A vyfn+q+e  s+
+  NP_001106248.2  97 DATKGEEVVEYMGPRPPVGIHRYVLVLFEQKTRVHAEAPGDRANFKTRAFAAAHELGLPTAVVYFNAQKEPASR 170
+                     ********************************************************************987554 PP
+
+>> NP_001106264.1  ZCN11 protein [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  182.3   0.0   1.7e-56   3.6e-53       6     174 ..       5     179 ..       1     180 [] 0.92
+
+  Alignments for each domain:
+  == domain 1  score: 182.3 bits;  conditional E-value: 1.7e-56
+  sequence.align   6 rdplvvgrvigdvldpftksvslrvaynnrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipattgas 100
+                      dplvvgrvigdv+d f+ +v+ +  ++ +++tngce+kps  + +P v i+G   + ++Tlvm DpDaPsps+pt+re Lhwlv +ip+ ++as
+  NP_001106264.1   5 VDPLVVGRVIGDVVDLFVPTVAVSARFGAKDLTNGCEIKPSVAAAAPAVLIAG-RANDLFTLVMTDPDAPSPSEPTMRELLHWLVVNIPGGADAS 98 
+                     4****************************************************.4558************************************9 PP
+
+  sequence.align 101 FGqe.ivvYesPrpsagihrlvfvlfrqlgretvlapew........rqnfntrefaelynlgapvAavyfncqresgsggrr 174
+                      G e +v Y  Prp++gihr+v+v+++q +r  v+ap          r+ f++r fa+++ lg+pvAa++fn+q+e+ s+ r+
+  NP_001106264.1  99 QGGEtVVPYVGPRPPVGIHRYVLVVYQQKAR--VTAPPSlapateatRARFSNRAFADRHDLGLPVAAMFFNAQKETASRRRH 179
+                     96554999*********************88..55555557888********************************9887775 PP
+
+>> XP_020394352.1  ZCN11 protein isoform X1 [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  182.3   0.0   1.7e-56   3.6e-53       6     174 ..       5     179 ..       1     180 [] 0.92
+
+  Alignments for each domain:
+  == domain 1  score: 182.3 bits;  conditional E-value: 1.7e-56
+  sequence.align   6 rdplvvgrvigdvldpftksvslrvaynnrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipattgas 100
+                      dplvvgrvigdv+d f+ +v+ +  ++ +++tngce+kps  + +P v i+G   + ++Tlvm DpDaPsps+pt+re Lhwlv +ip+ ++as
+  XP_020394352.1   5 VDPLVVGRVIGDVVDLFVPTVAVSARFGAKDLTNGCEIKPSVAAAAPAVLIAG-RANDLFTLVMTDPDAPSPSEPTMRELLHWLVVNIPGGADAS 98 
+                     4****************************************************.4558************************************9 PP
+
+  sequence.align 101 FGqe.ivvYesPrpsagihrlvfvlfrqlgretvlapew........rqnfntrefaelynlgapvAavyfncqresgsggrr 174
+                      G e +v Y  Prp++gihr+v+v+++q +r  v+ap          r+ f++r fa+++ lg+pvAa++fn+q+e+ s+ r+
+  XP_020394352.1  99 QGGEtVVPYVGPRPPVGIHRYVLVVYQQKAR--VTAPPSlapateatRARFSNRAFADRHDLGLPVAAMFFNAQKETASRRRH 179
+                     96554999*********************88..55555557888********************************9887775 PP
+
+>> XP_008680422.1  protein HEADING DATE 3A-like [Zea mays]
+   #    score  bias  c-Evalue  i-Evalue hmmfrom  hmm to    alifrom  ali to    envfrom  env to     acc
+ ---   ------ ----- --------- --------- ------- -------    ------- -------    ------- -------    ----
+   1 !  163.5   0.1   9.9e-51   2.1e-47       5     104 ..      20     119 ..       7     132 .. 0.93
+
+  Alignments for each domain:
+  == domain 1  score: 163.5 bits;  conditional E-value: 9.9e-51
+  sequence.align   5 srdplvvgrvigdvldpftksvslrvaynnrevtngcelkpsavvnqPrveigGdDlrkfYTlvmvDpDaPspsnptlreyLhwlvtdipattga 99 
+                       dplv++rv++dvldpft +++lr++ynn+ v +g+elkpsa++++Prv+igG+D+r+fY+lv++DpDaPsps+ptlreyLhw+vtdip+tt++
+  XP_008680422.1  20 ATDPLVMARVLQDVLDPFTPTIPLRITYNNSLVLAGAELKPSAIISKPRVDIGGNDMRTFYSLVLIDPDAPSPSHPTLREYLHWMVTDIPETTSV 114
+                     46********************************************************************************************* PP
+
+  sequence.align 100 sFGqe 104
+                     +F + 
+  XP_008680422.1 115 NFDKD 119
+                     **665 PP
+
+
+
+Internal pipeline statistics summary:
+-------------------------------------
+Query model(s):                            1  (216 nodes)
+Target sequences:                      57578  (26289415 residues searched)
+Passed MSV filter:                      1150  (0.0199729); expected 1151.6 (0.02)
+Passed bias filter:                      954  (0.0165688); expected 1151.6 (0.02)
+Passed Vit filter:                        81  (0.00140679); expected 57.6 (0.001)
+Passed Fwd filter:                        27  (0.000468929); expected 0.6 (1e-05)
+Initial search space (Z):              57578  [actual number of targets]
+Domain search space  (domZ):              27  [number of targets reported over threshold]
+# CPU time: 0.79u 0.06s 00:00:00.85 Elapsed: 00:00:02.16
+# Mc/sec: 2620.08
+//
+[ok]

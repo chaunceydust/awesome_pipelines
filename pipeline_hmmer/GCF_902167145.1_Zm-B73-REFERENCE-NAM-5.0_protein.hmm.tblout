@@ -1,0 +1,40 @@
+#                                                               --- full sequence ---- --- best 1 domain ---- --- domain number estimation ----
+# target name        accession  query name           accession    E-value  score  bias   E-value  score  bias   exp reg clu  ov env dom rep inc description of target
+#------------------- ---------- -------------------- ---------- --------- ------ ----- --------- ------ -----   --- --- --- --- --- --- --- --- ---------------------
+NP_001106251.1       -          sequence.align       -            5.7e-97  325.5   0.0   6.3e-97  325.4   0.0   1.0   1   0   0   1   1   1   1 ZCN14 protein [Zea mays]
+NP_001106252.1       -          sequence.align       -            1.8e-96  323.9   0.0   1.9e-96  323.8   0.0   1.0   1   0   0   1   1   1   1 uncharacterized protein LOC100127524 [Zea mays]
+NP_001106253.1       -          sequence.align       -            1.6e-93  314.2   0.0   1.8e-93  314.1   0.0   1.0   1   0   0   1   1   1   1 ZCN16 protein [Zea mays]
+NP_001106254.1       -          sequence.align       -            2.8e-93  313.4   0.1   3.1e-93  313.3   0.1   1.0   1   0   0   1   1   1   1 ZCN17 protein [Zea mays]
+NP_001106256.1       -          sequence.align       -            1.3e-92  311.3   0.0   1.4e-92  311.1   0.0   1.0   1   0   0   1   1   1   1 ZCN19 protein [Zea mays]
+NP_001106257.1       -          sequence.align       -            4.6e-92  309.5   0.0     5e-92  309.3   0.0   1.0   1   0   0   1   1   1   1 uncharacterized protein LOC100127530 [Zea mays]
+XP_008654209.1       -          sequence.align       -            1.5e-91  307.8   0.0   2.5e-91  307.1   0.0   1.3   1   1   0   1   1   1   1 ZCN14 protein isoform X1 [Zea mays]
+NP_001106265.1       -          sequence.align       -            3.8e-88  296.7   0.0   4.1e-88  296.6   0.0   1.0   1   0   0   1   1   1   1 uncharacterized protein LOC100127539 [Zea mays]
+XP_008652921.1       -          sequence.align       -            4.2e-88  296.5   0.0   4.6e-88  296.4   0.0   1.0   1   0   0   1   1   1   1 protein FLOWERING LOCUS T [Zea mays]
+NP_001354358.1       -          sequence.align       -              5e-87  293.0   0.0   5.5e-87  292.9   0.0   1.0   1   0   0   1   1   1   1 ZCN18 protein [Zea mays]
+NP_001106246.1       -          sequence.align       -              2e-86  291.1   0.0   2.3e-86  290.8   0.0   1.0   1   0   0   1   1   1   1 ZCN7 protein [Zea mays]
+XP_008646959.1       -          sequence.align       -            2.4e-86  290.8   0.0   2.8e-86  290.5   0.0   1.0   1   0   0   1   1   1   1 protein FLOWERING LOCUS T [Zea mays]
+NP_001106250.1       -          sequence.align       -            1.3e-85  288.4   0.0   1.4e-85  288.3   0.0   1.0   1   0   0   1   1   1   1 uncharacterized protein LOC100127522 [Zea mays]
+NP_001106247.1       -          sequence.align       -            2.4e-85  287.5   0.0   2.7e-85  287.4   0.0   1.0   1   0   0   1   1   1   1 ZCN8 protein [Zea mays]
+XP_008671372.1       -          sequence.align       -            6.2e-83  279.6   0.0   7.4e-83  279.4   0.0   1.0   1   0   0   1   1   1   1 protein FLOWERING LOCUS T [Zea mays]
+NP_001296779.1       -          sequence.align       -              7e-82  276.2   0.0   7.7e-82  276.1   0.0   1.0   1   0   0   1   1   1   1 protein TWIN SISTER of FT [Zea mays]
+NP_001105959.1       -          sequence.align       -            5.6e-72  243.8   0.0   6.1e-72  243.7   0.0   1.0   1   0   0   1   1   1   1 uncharacterized protein LOC100037785 [Zea mays]
+NP_001106244.1       -          sequence.align       -            2.4e-71  241.8   0.2   2.6e-71  241.7   0.2   1.0   1   0   0   1   1   1   1 ZCN5 protein [Zea mays]
+NP_001106242.1       -          sequence.align       -            5.3e-71  240.6   0.1   5.8e-71  240.5   0.1   1.0   1   0   0   1   1   1   1 ZCN3 protein [Zea mays]
+NP_001106241.1       -          sequence.align       -              1e-69  236.5   0.1   1.1e-69  236.3   0.1   1.0   1   0   0   1   1   1   1 ZCN2 protein [Zea mays]
+NP_001106243.1       -          sequence.align       -            3.4e-69  234.7   0.1   3.7e-69  234.6   0.1   1.0   1   0   0   1   1   1   1 ZCN4 protein [Zea mays]
+NP_001106245.1       -          sequence.align       -            4.5e-66  224.5   0.1   4.9e-66  224.4   0.1   1.0   1   0   0   1   1   1   1 ZCN6 protein [Zea mays]
+NP_001106249.1       -          sequence.align       -            1.9e-62  212.7   0.0   2.1e-62  212.6   0.0   1.0   1   0   0   1   1   1   1 ZCN10 protein [Zea mays]
+NP_001106248.2       -          sequence.align       -            2.2e-61  209.2   0.0   2.3e-61  209.1   0.0   1.0   1   0   0   1   1   1   1 ZCN9 protein [Zea mays]
+NP_001106264.1       -          sequence.align       -            3.3e-53  182.5   0.0   3.6e-53  182.3   0.0   1.0   1   0   0   1   1   1   1 ZCN11 protein [Zea mays]
+XP_020394352.1       -          sequence.align       -            3.3e-53  182.5   0.0   3.6e-53  182.3   0.0   1.0   1   0   0   1   1   1   1 ZCN11 protein isoform X1 [Zea mays]
+XP_008680422.1       -          sequence.align       -            1.7e-47  163.8   0.1   2.1e-47  163.5   0.1   1.0   1   0   0   1   1   1   1 protein HEADING DATE 3A-like [Zea mays]
+#
+# Program:         hmmsearch
+# Version:         3.3.2 (Nov 2020)
+# Pipeline mode:   SEARCH
+# Query file:      sequence.hmm
+# Target file:     GCF_902167145.1_Zm-B73-REFERENCE-NAM-5.0_protein.faa
+# Option settings: hmmsearch -o GCF_902167145.1_Zm-B73-REFERENCE-NAM-5.0_protein.hmm.out --tblout GCF_902167145.1_Zm-B73-REFERENCE-NAM-5.0_protein.hmm.tblout --domtblout GCF_902167145.1_Zm-B73-REFERENCE-NAM-5.0_protein.hmm.domtblout --pfamtblout GCF_902167145.1_Zm-B73-REFERENCE-NAM-5.0_protein.hmm.pfamtblout -E 1e-5 --cpu 20 sequence.hmm GCF_902167145.1_Zm-B73-REFERENCE-NAM-5.0_protein.faa 
+# Current dir:     /home/zhouxingchen/Scripts/pipeline_hmmer
+# Date:            Wed Sep 28 22:02:40 2022
+# [ok]

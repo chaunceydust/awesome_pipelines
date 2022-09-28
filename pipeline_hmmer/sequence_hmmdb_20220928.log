@@ -1,0 +1,15 @@
+# hmmbuild :: profile HMM construction from multiple sequence alignments
+# HMMER 3.3.2 (Nov 2020); http://hmmer.org/
+# Copyright (C) 2020 Howard Hughes Medical Institute.
+# Freely distributed under the BSD open source license.
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+# input alignment file:             sequence.align.stockholm
+# output HMM file:                  sequence.hmm
+# number of worker threads:         20
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+# idx name                  nseq  alen  mlen eff_nseq re/pos description
+#---- -------------------- ----- ----- ----- -------- ------ -----------
+1     sequence.align         229  2063   216     3.20  0.590 
+
+# CPU time: 0.59u 0.00s 00:00:00.59 Elapsed: 00:00:02.71
