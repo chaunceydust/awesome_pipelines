@@ -88,3 +88,10 @@ enricher(gene_list,
 ## MEGAN6 - Metagenome Analyzer
 - [megan主页](https://uni-tuebingen.de/en/fakultaeten/mathematisch-naturwissenschaftliche-fakultaet/fachbereiche/informatik/lehrstuehle/algorithms-in-bioinformatics/software/megan6/)
 - [megan软件及数据库下载](https://software-ab.informatik.uni-tuebingen.de/download/megan6/welcome.html)
+
+## BLAST pipeline
+#### required software
+* blast
+* perl
+* parafly
+* perl-bioperl
