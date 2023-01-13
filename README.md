@@ -95,3 +95,7 @@ enricher(gene_list,
 * perl
 * parafly
 * perl-bioperl
+```
+mamba install -c bioconda blast parafly  perl-bioperl -y
+mamba install -c conda-forge perl -y
+```
