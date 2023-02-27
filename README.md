@@ -113,3 +113,66 @@ mamba install krona -c bioconda
 
 mamba install -c bioconda taxonkit csvtk -y
 ```
+
+### 数据库下载
+- 数据库
+
+下载数据库(NCBI每2周更新一次)，记录下载日期和大小。需根据服务器内存、使用目的选择合适方案。--standard标准模式下只下载5种数据库：古菌archaea、细菌bacteria、人类human、载体UniVec_Core、病毒viral。也可选直接下载作者构建的索引，还包括bracken的索引。
+
+- 方法1. 数据库下载
+
+下载标准+原生动物+真菌+植物8GB(PlusPFP-8)数据库，包括kraken2和bracken2的索引。更多版本数据库详见：https://benlangmead.github.io/aws-indexes/k2 。
+
+    mkdir -p ~/db/kraken2 && cd ~/db/kraken2
+
+方案1. 迷你库(8G，低配推荐)
+
+    # 压缩包5.2G，
+    wget -c https://genome-idx.s3.amazonaws.com/kraken/k2_pluspf_8gb_20210517.tar.gz
+    tar xvzf k2_pluspf_8gb_20210517.tar.gz
+
+方案2. 完整库(70G，高配推荐)
+
+压缩包70G，解压后100G。指定解压目录，包括时间和类型。201202为更新时间，pfp指标准库+原生动物+真菌+植物。注：但我使用中发现仍然没有真菌。
+
+    d=201202pfp
+    mkdir ${d}
+    wget -c https://genome-idx.s3.amazonaws.com/kraken/k2_pluspfp_20201202.tar.gz
+    tar xvzf k2_pluspfp_20201202.tar.gz -C ${d}
+
+方案3. 第3方个性数据库(人和病毒含新冠)，仅用于病毒检测
+
+https://genexa.ch/sars2-bioinformatics-resources/
+
+    wget -c https://storage.googleapis.com/sars-cov-2/kraken2_h%2Bv_20200319.tar.gz
+    mkdir -p 200319hv/
+    tar xvzf kraken2_h+v_20200319.tar.gz -C 200319hv/
+
+
+- (可选)方法2. 数据库安装
+
+方案1. 标准库安装，下载数据~100GB，时间由网速决定，索引5h，多线程可加速至1h完成
+    
+    cd ${db}
+    d=210808
+    mkdir -p kraken2/$d && cd kraken2/$d
+    kraken2-build --standard --threads 24 --db ./
+    
+方案2. 自定义微生物数据库，如标准+真菌+原生动物+质粒+植物
+
+    cd ${db}
+    d=210808fpf
+    mkdir -p kraken2/$d && cd kraken2/$d
+    # 显示帮助
+    kraken2-build -h
+    # 下载物种注释
+    kraken2-build --download-taxonomy --threads 24 --db ./
+    # 下载数据库，需要12-24小时
+    for i in archaea bacteria UniVec_Core viral human fungi plasmid protozoa plant; do
+        kraken2-build --download-library $i --threads 24 --db ./
+    done
+    # 确定的库建索引，4p,4h
+    time kraken2-build --build --threads 48 --db ./
+    # bracken索引，长度推荐100/150, 24p,1h;
+    time bracken-build -d ./ -t 24 -k 35 -l 100
+    time bracken-build -d ./ -t 24 -k 35 -l 150
