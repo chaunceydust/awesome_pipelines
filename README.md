@@ -99,3 +99,17 @@ enricher(gene_list,
 mamba install -c bioconda blast parafly  perl-bioperl -y
 mamba install -c conda-forge perl -y
 ```
+
+
+## Kraken2 pipeline
+```
+mamba create -n kraken2 -y -c bioconda kraken2
+mamba activate kraken2
+mamba install bracken=2.6.0 -c bioconda
+# krakentools 0.1 补充脚本
+mamba install krakentools -c bioconda
+# krona绘图
+mamba install krona -c bioconda
+
+mamba install -c bioconda taxonkit csvtk -y
+```
