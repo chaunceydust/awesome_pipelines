@@ -122,6 +122,7 @@ mamba install -c bioconda taxonkit csvtk -y
 - 方法1. 数据库下载
 
 下载标准+原生动物+真菌+植物8GB(PlusPFP-8)数据库，包括kraken2和bracken2的索引。更多版本数据库详见：https://benlangmead.github.io/aws-indexes/k2 。
+ftp://ftp.ccb.jhu.edu/pub/data/kraken2_dbs/
 
     mkdir -p ~/db/kraken2 && cd ~/db/kraken2
 
